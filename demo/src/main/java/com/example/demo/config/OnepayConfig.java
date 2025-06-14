@@ -12,7 +12,7 @@ public class OnepayConfig {
 
     static public final String VPC_COMMAND = "pay";
 
-    static public final String VPC_RETURN_URL = "/transaction/onepay/ipn";
+    static public final String VPC_RETURN_URL = "/checkout/ipn";
     static public final String VPC_VERSION = "2";
     static public final String AGAIN_LINK = "onepay.vn";
     static public final String TITLE = "Marathon-VPBank";

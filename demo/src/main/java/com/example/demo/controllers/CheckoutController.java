@@ -17,10 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/checkout")
@@ -56,10 +53,17 @@ public class CheckoutController {
     @GetMapping("/quick")
     public String quickCheckout(HttpServletRequest req) {
         try {
-
+            // tạo mã giao dịch giả
             String txnRef = LocalDateTime.now().toString();
+
+
+            // ip của request
             String ipClient = req.getRemoteAddr();
+
+
             Map<String, Object> fields = new HashMap<>();
+
+
             fields.put("vpc_TicketNo", ipClient);
             fields.put("vpc_MerchTxnRef", txnRef);
             fields.put("vpc_OrderInfo", txnRef);
@@ -70,7 +74,7 @@ public class CheckoutController {
             fields.put("vpc_Command", OnepayConfig.VPC_COMMAND);
             fields.put("AgainLink", OnepayConfig.AGAIN_LINK);
             fields.put("Title", OnepayConfig.TITLE);
-            fields.put("vpc_ReturnURL", "http://domain.com/" + OnepayConfig.VPC_RETURN_URL);
+            fields.put("vpc_ReturnURL", "http://localhost:8080" + OnepayConfig.VPC_RETURN_URL);
 
             String vpc_Locale = req.getParameter("vpc_Locale");
             if (vpc_Locale == null || vpc_Locale.length() == 0) {
@@ -107,6 +111,7 @@ public class CheckoutController {
             String redirectUrl = onePayOriginalUrl;
 
 
+
             return onePayOriginalUrl;
         } catch (Exception e) {
             System.out.println("CHECKOUT_SERVICE: " + e.getMessage());
@@ -114,5 +119,22 @@ public class CheckoutController {
             return "something";
             // throw new ApiError(400, e.getMessage());
         }
+    }
+
+
+    @GetMapping("/ipn")
+    public String ipn(HttpServletRequest req){
+        Enumeration<String> requestParams = req.getParameterNames();
+        while(requestParams.hasMoreElements()){
+            String paramName = requestParams.nextElement();
+            String[] values =  req.getParameterValues(paramName);
+            if ("vpc_TxnResponseCode".equals(paramName)){
+                for (String value: values){
+                    System.out.println(paramName + ":" + value);
+                }
+            }
+
+        }
+       return "Giao dịch thành công";
     }
 }

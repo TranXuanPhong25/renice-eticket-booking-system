@@ -38,7 +38,7 @@ public class OnepayService {
         decodeHexArray['f'] = decodeHexArray['F'];
     }
 
-    public String   hashAllFields(Map fields) {
+    public String hashAllFields(Map fields) {
         List fieldNames = new ArrayList(fields.keySet());
         Collections.sort(fieldNames);
         StringBuffer buf = new StringBuffer();
