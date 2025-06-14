@@ -1,7 +1,5 @@
 package com.example.demo.controllers;
 
-import com.example.demo.utils.OnepayPaymentUtil;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,9 +11,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/onepay")
 public class OnepayReturnController {
-    @Autowired
-    private OnepayPaymentUtil onepayPaymentUtil;
-
     @GetMapping("/return")
     public String handleReturn(@RequestParam Map<String, String> params) {
         // Lấy secure hash từ params
@@ -37,19 +32,19 @@ public class OnepayReturnController {
                 .reduce((a, b) -> a + "&" + b).orElse("");
 
         // Hash lại để so sánh
-        String expectedHash = onepayPaymentUtil.buildSecureHash(hashData);
-        boolean valid = secureHash != null && secureHash.equalsIgnoreCase(expectedHash);
+//        String expectedHash = onepayPaymentUtil.buildSecureHash(hashData);
+//        boolean valid = secureHash != null && secureHash.equalsIgnoreCase(expectedHash);
 
         // Kiểm tra trạng thái giao dịch
         String txnResponseCode = params.get("vpc_TxnResponseCode");
         String message;
-        if (!valid) {
-            message = "Dữ liệu không hợp lệ (sai secure hash)!";
-        } else if ("0".equals(txnResponseCode)) {
-            message = "Thanh toán thành công!";
-        } else {
-            message = "Thanh toán thất bại! Mã lỗi: " + txnResponseCode;
-        }
-        return message;
+//        if (!valid) {
+//            message = "Dữ liệu không hợp lệ (sai secure hash)!";
+//        } else if ("0".equals(txnResponseCode)) {
+//            message = "Thanh toán thành công!";
+//        } else {
+//            message = "Thanh toán thất bại! Mã lỗi: " + txnResponseCode;
+//        }
+        return "message";
     }
 } 
