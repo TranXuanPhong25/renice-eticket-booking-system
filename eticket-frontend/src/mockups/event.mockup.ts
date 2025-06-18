@@ -69,7 +69,7 @@ export const mockupEventDetail = {
     {
       id: "zone_cat1",
       name: "Khán đài CAT-1",
-      price: 300000,
+      price: 2500000,
       color: "#d63384",
       points: "50,300 150,300 150,400 50,400",
       status: "available",
@@ -77,47 +77,57 @@ export const mockupEventDetail = {
     {
       id: "zone_cat2",
       name: "Khán đài CAT-2",
-      price: 300000,
-      color: "#d63384",
+      price: 2000000,
+      color: "#fd7e14",
       points: "170,300 270,300 270,400 170,400",
       status: "available",
     },
     {
       id: "zone_vip1",
-      name: "Khán đài VIP-2",
-      price: 200000,
+      name: "Khán đài VIP-1",
+      price: 1500000,
       color: "#6f42c1",
       points: "50,420 150,420 150,520 50,520",
       status: "out",
     },
     {
-      id: "zone_svip",
-      name: "Khán đài SVIP",
-      price: 200000,
-      color: "#6f42c1",
+      id: "zone_vip2",
+      name: "Khán đài VIP-2",
+      price: 1200000,
+      color: "#20c997",
       points: "170,420 270,420 270,520 170,520",
+      status: "available",
+    },
+    {
+      id: "zone_regular",
+      name: "Khán đài Thường",
+      price: 800000,
+      color: "#6c757d",
+      points: "50,540 270,540 270,640 50,640",
       status: "available",
     },
   ],
   artists: [
     {
-      name: "Sơn Tùng MTP",
-      image: "",
+      name: "Kim Jae Joong",
+      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
     },
     {
-      name: "Hà Trần",
-      image: "",
+      name: "Special Guest Artist",
+      image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop&crop=face",
     },
   ],
   hosts: [
     {
       name: "VPBank",
-      image: "",
+      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200&h=200&fit=crop",
     },
     {
       name: "UET CodeCamp",
-      image: "",
+      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200&h=200&fit=crop",
     },
   ],
-  description: "something to say",
+  description: `Sau thành công vang dội của các tour diễn trước đó, Kim Jae Joong - thành viên huyền thoại của nhóm nhạc đình đám TVXQ sẽ trở lại Việt Nam với Asia Tour Concert "Beauty in Chaos" 2025.
+
+Concert hứa hẹn sẽ mang đến cho khán giả Việt Nam những màn trình diễn đỉnh cao với loạt hit kinh điển và những ca khúc mới nhất từ album solo của anh. Với kinh nghiệm biểu diễn dày dặn cùng vũ đạo quyến rũ và giọng hát đầy cảm xúc, Kim Jae Joong sẽ tạo nên một đêm nhạc không thể quên.`,
 };

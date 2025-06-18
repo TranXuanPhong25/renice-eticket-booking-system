@@ -101,6 +101,34 @@ const ArtistSection = ({ artists, hosts }: { artists: any[], hosts: any[] }) => 
   );
 };
 
+const TicketPricing = ({ seats }: { seats: any[] }) => {
+  return (
+    <div className="bg-white rounded-xl p-6 shadow-sm">
+      <h3 className="text-xl font-semibold mb-4 text-gray-800">Bảng giá vé</h3>
+      <div className="space-y-3">
+        {seats.map((seat) => (
+          <div key={seat.id} className="flex justify-between items-center p-3 border rounded-lg">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: seat.color }}
+              ></div>
+              <span className="font-medium text-gray-700">{seat.name}</span>
+              <Badge
+                status={seat.status === 'available' ? 'success' : seat.status === 'out' ? 'error' : 'warning'}
+                text={seat.status === 'available' ? 'Còn vé' : seat.status === 'out' ? 'Hết vé' : 'Sắp hết'}
+              />
+            </div>
+            <div className="text-lg font-semibold text-blue-600">
+              {seat.price.toLocaleString('vi-VN')} VNĐ
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const EventHighlights = () => {
   const highlights = [
     "Âm thanh và ánh sáng chuyên nghiệp",
@@ -319,6 +347,9 @@ export default async function EventDetailPage({
             {/* Event Highlights */}
             <EventHighlights />
           </div>
+
+          {/* Ticket Pricing */}
+          <TicketPricing seats={mockupEventDetail.seats} />
 
           {/* Important Information */}
           <Card className="bg-yellow-50 border-yellow-200">
