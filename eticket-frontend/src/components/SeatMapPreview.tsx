@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Button, Card, Modal, Badge } from "antd";
 import { IoEyeOutline } from "react-icons/io5";
 import TicketZoneMap from "@andrew/module/booking/TicketZoneMap";
+import { Seat } from "@andrew/types/seat";
 
 
-const TicketPricing = ({ seats }: { seats: any[] }) => {
+const TicketPricing = ({ seats }: { seats: Seat[] }) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <h3 className="text-xl font-semibold mb-4 text-gray-800">Bảng giá vé</h3>
@@ -155,7 +156,7 @@ export const SeatMapPreview = ({ seats }: any) => {
                      💺 Bảng giá vé chi tiết
                   </h4>
                   <div className="grid gap-3">
-                     {seats.map((seat) => (
+                     {seats.map((seat:Seat) => (
                         <div key={seat.id} className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border hover:shadow-md transition-shadow">
                            <div className="flex items-center gap-3">
                               <div

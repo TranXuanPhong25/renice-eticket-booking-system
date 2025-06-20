@@ -17,7 +17,7 @@ import {
   IoChevronForwardOutline
 } from "react-icons/io5";
 import { FaFacebook, FaYoutube, FaTwitter, FaInstagram } from "react-icons/fa";
-
+import NextImage  from "next/image" ;
 const EventBasicInformation = (props: any) => {
   const { data } = props;
 
@@ -210,9 +210,20 @@ export default async function EventDetailPage({
       </div>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <Container>
-          <div className="grid lg:grid-cols-2 gap-8 py-8 lg:py-12">
+      <section className="relative overflow-hidden">
+        {/* Background Image with Blur */}
+         <div className="absolute !z-0">
+          <Image
+            preview={false}
+            className="!w-screen object-cover !z-0"
+            src={mockupEventDetail.image}
+            alt={mockupEventDetail.name}
+            style={{ filter: 'blur(8px) brightness(0.5)', transform: 'scale(1.1)' }}
+          />
+        </div>
+        {/* Content */}
+        <Container className="relative !z-20">
+          <div className="grid lg:grid-cols-2 gap-8 py-8 lg:py-12 items-center">
             {/* Event Image */}
             <div className="space-y-4">
               <div className="relative">
@@ -232,8 +243,7 @@ export default async function EventDetailPage({
               <Button
                 type="primary"
                 href={`/${slug}/buy`}
-                size="large"
-                className="w-full h-12 lg:h-14 text-base lg:text-lg font-semibold bg-gradient-to-r from-blue-500 to-purple-600 border-none hover:from-blue-600 hover:to-purple-700"
+                className="w-full !h-14 text-base lg:!text-lg font-semibold "
                 icon={<IoTicketOutline size={20} />}
               >
                 MUA VÉ NGAY - Từ {priceRange.minPrice.toLocaleString('vi-VN')} VNĐ
@@ -241,7 +251,7 @@ export default async function EventDetailPage({
             </div>
 
             {/* Event Details */}
-            <div className="text-white space-y-6">
+            <div className="text-white space-y-6 z-10">
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <Tag color="blue">{mockupEventDetail.type.toUpperCase()}</Tag>
