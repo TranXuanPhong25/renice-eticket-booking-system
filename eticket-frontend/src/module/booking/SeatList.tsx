@@ -1,4 +1,4 @@
-import { SlotInput } from "@andrew/components/SlotInput";
+import { SlotInput } from "@/components/SlotInput";
 import { Card, Tag } from "antd";
 import { Controller } from "react-hook-form";
 

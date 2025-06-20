@@ -1,6 +1,6 @@
-import { Container } from "@andrew/components/Container";
-import { EventList } from "@andrew/module/home/EventList";
-import { EventSlider } from "@andrew/module/home/EventSlider";
+import { Container } from "@/components/Container";
+import { EventList } from "@/module/home/EventList";
+import { EventSlider } from "@/module/home/EventSlider";
 
 export default function Home() {
   return (

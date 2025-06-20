@@ -1,5 +1,5 @@
-import { eventTypeMapping } from "@andrew/constants/event.constant";
-import { mockupEvents } from "@andrew/mockups/event.mockup";
+import { eventTypeMapping } from "@/constants/event.constant";
+import { mockupEvents } from "@/mockups/event.mockup";
 import { Image, Tag } from "antd";
 import Link from "next/link";
 

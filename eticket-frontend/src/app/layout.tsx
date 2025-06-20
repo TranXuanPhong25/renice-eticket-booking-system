@@ -1,8 +1,6 @@
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import type { Metadata } from "next";
 
-import { Footer } from "@andrew/components/Footer";
-import { Header } from "@andrew/components/Header";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,11 +26,9 @@ export default function RootLayout({
         <meta name="keywords" content="booking, tickets, events, concerts" />
       </head>
       <body className="">
-        <Header />
         <AntdRegistry>
           <div>{children}</div>
         </AntdRegistry>
-        <Footer />
       </body>
     </html>
   );

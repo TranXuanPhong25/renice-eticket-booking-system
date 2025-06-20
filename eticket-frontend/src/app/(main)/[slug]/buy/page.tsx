@@ -1,6 +1,6 @@
-import { Container } from "@andrew/components/Container";
-import { mockupEventDetail } from "@andrew/mockups/event.mockup";
-import { SlotSelection } from "@andrew/module/booking/SlotSelection";
+import { Container } from "@/components/Container";
+import { mockupEventDetail } from "@/mockups/event.mockup";
+import { SlotSelection } from "@/module/booking/SlotSelection";
 
 export default async function EventDetailPage({
   params,

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Button, Card, Modal, Badge } from "antd";
 import { IoEyeOutline } from "react-icons/io5";
-import TicketZoneMap from "@andrew/module/booking/TicketZoneMap";
-import { Seat } from "@andrew/types/seat";
+import TicketZoneMap from "@/module/booking/TicketZoneMap";
+import { Seat } from "@/types/seat";
 
 
 const TicketPricing = ({ seats }: { seats: Seat[] }) => {

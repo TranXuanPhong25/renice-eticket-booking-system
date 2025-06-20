@@ -1,7 +1,8 @@
-import { Container } from "@andrew/components/Container";
-import { SeatMapPreview } from "@andrew/components/event/SeatMapPreview";
-import { mockupEventDetail } from "@andrew/mockups/event.mockup";
-import { getMaxMinPrice } from "@andrew/utils/event.utils";
+import { Container } from "@/components/Container";
+import { SeatMapPreview } from "@/components/event/SeatMapPreview";
+import { mockupEventDetail } from "@/mockups/event.mockup";
+import CopyLinkButton from "@/components/event/CopyLinkButton";
+import { getMaxMinPrice } from "@/utils/event.utils";
 import { Button, Image, Tag, Card, Divider, Avatar, Badge, Breadcrumb } from "antd";
 import {
   IoCalendar,
@@ -18,7 +19,6 @@ import {
 } from "react-icons/io5";
 import { FaFacebook, FaYoutube, FaTwitter, FaInstagram } from "react-icons/fa";
 import Link from "next/link";
-import CopyLinkButton from "@andrew/components/event/CopyLinkButton";
 const EventBasicInformation = (props: any) => {
   const { data } = props;
 
