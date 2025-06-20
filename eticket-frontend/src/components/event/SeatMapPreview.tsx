@@ -9,7 +9,7 @@ import { Seat } from "@andrew/types/seat";
 
 const TicketPricing = ({ seats }: { seats: Seat[] }) => {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
+    <div className="bg-white mt-6">
       <h3 className="text-xl font-semibold mb-4 text-gray-800">Bảng giá vé</h3>
       <div className="space-y-3">
         {seats.map((seat) => (

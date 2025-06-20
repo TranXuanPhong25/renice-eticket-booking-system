@@ -1,5 +1,5 @@
 import { Container } from "@andrew/components/Container";
-import { SeatMapPreview } from "@andrew/components/SeatMapPreview";
+import { SeatMapPreview } from "@andrew/components/event/SeatMapPreview";
 import { mockupEventDetail } from "@andrew/mockups/event.mockup";
 import { getMaxMinPrice } from "@andrew/utils/event.utils";
 import { Button, Image, Tag, Card, Divider, Avatar, Badge, Breadcrumb } from "antd";
@@ -17,56 +17,41 @@ import {
   IoChevronForwardOutline
 } from "react-icons/io5";
 import { FaFacebook, FaYoutube, FaTwitter, FaInstagram } from "react-icons/fa";
-import NextImage  from "next/image" ;
+import Link from "next/link";
+import CopyLinkButton from "@andrew/components/event/CopyLinkButton";
 const EventBasicInformation = (props: any) => {
   const { data } = props;
 
   return (
     <div className="flex flex-col gap-4">
       {data.map((item: any, index: number) => (
-        <div key={index} className="flex gap-3 items-start">
+        <div key={index} className="flex gap-3 items-center">
           <span className="text-blue-400 mt-1">{item.icon}</span>
-          <div className="text-lg text-gray-100">{item.value}</div>
+          <div className="text-gray-100">{item.value}</div>
         </div>
       ))}
     </div>
   );
 };
 
-const EventStats = () => {
-  return (
-    <div className="flex gap-6 items-center text-gray-300">
-      <div className="flex items-center gap-2">
-        <IoHeartOutline size={20} />
-        <span>1.2k quan tâm</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <IoShareSocialOutline size={20} />
-        <span>Chia sẻ</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <IoStarOutline size={20} />
-        <span>4.8 (128 đánh giá)</span>
-      </div>
-    </div>
-  );
-};
+
 
 const SocialLinks = ({ socials }: { socials: any }) => {
   return (
-    <div className="flex gap-3 mt-4">
+    <div className="flex gap-3 mt-4 ml-10">
       {socials.facebook && (
-        <a href={socials.facebook} target="_blank" rel="noopener noreferrer"
+        <Link href={socials.facebook} target="_blank" rel="noopener noreferrer"
           className="text-blue-400 hover:text-blue-300 transition-colors">
           <FaFacebook size={24} />
-        </a>
+        </Link>
       )}
       {socials.youtube && (
-        <a href={socials.youtube} target="_blank" rel="noopener noreferrer"
+        <Link href={socials.youtube} target="_blank" rel="noopener noreferrer"
           className="text-red-400 hover:text-red-300 transition-colors">
           <FaYoutube size={24} />
-        </a>
+        </Link>
       )}
+      <CopyLinkButton link={`https://eticket.vn/${socials.slug}`} />
     </div>
   );
 };
@@ -74,55 +59,47 @@ const SocialLinks = ({ socials }: { socials: any }) => {
 const ArtistSection = ({ artists, hosts }: { artists: any[], hosts: any[] }) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h3 className="text-xl font-semibold mb-4 text-gray-800">Nghệ sĩ tham gia</h3>
-      <div className="flex flex-wrap gap-4 mb-6">
+      <h3 className="text-xl font-semibold mb-6 text-gray-800">Nghệ sĩ tham gia</h3>
+
+      {/* Artists Grid */}
+      <div className="flex justify-around flex-wrap gap-4 mb-8">
         {artists.map((artist, index) => (
-          <div key={index} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-            <Avatar size={48} src={artist.image} icon={<IoPersonOutline />} />
-            <span className="font-medium text-gray-700">{artist.name}</span>
+          <div key={index} className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors">
+            <div className="relative">
+              <Avatar
+                size={64}
+                src={artist.image}
+                icon={<IoPersonOutline />}
+                className="border-2 border-gray-100"
+              />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-lg text-gray-900">{artist.name}</h4>
+              <p className="text-sm text-gray-500 mt-1">Artist</p>
+            </div>
           </div>
         ))}
       </div>
 
       {hosts.length > 0 && (
-        <>
-          <h4 className="text-lg font-medium mb-3 text-gray-700">Đơn vị tổ chức</h4>
-          <div className="flex flex-wrap gap-3">
+
+        <div>
+          <h4 className="text-xl font-semibold mb-4 text-gray-700">Đơn vị tổ chức</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {hosts.map((host, index) => (
-              <div key={index} className="flex items-center gap-2 bg-blue-50 rounded-lg p-2">
-                <Avatar size={32} src={host.image} icon={<IoPersonOutline />} />
-                <span className="text-gray-600">{host.name}</span>
+              <div key={index} className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                <Avatar size={40} src={host.image} icon={<IoPersonOutline />} />
+                <span className="font-medium text-gray-700">{host.name}</span>
               </div>
             ))}
           </div>
-        </>
+        </div>
+
       )}
     </div>
   );
 };
 
-const EventHighlights = () => {
-  const highlights = [
-    "Âm thanh và ánh sáng chuyên nghiệp",
-    "Hệ thống bảo mật an toàn",
-    "Dịch vụ khách hàng 24/7",
-    "Hoàn tiền 100% nếu sự kiện bị hủy"
-  ];
-
-  return (
-    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6">
-      <h3 className="text-xl font-semibold mb-4 text-gray-800">Điểm nổi bật</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {highlights.map((highlight, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <IoTicketOutline className="text-blue-500 flex-shrink-0" size={16} />
-            <span className="text-gray-700 text-sm">{highlight}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 const EventCountdown = ({ date }: { date: string }) => {
   return (
@@ -212,13 +189,13 @@ export default async function EventDetailPage({
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background Image with Blur */}
-         <div className="absolute !z-0">
+        <div className="absolute !z-0">
           <Image
             preview={false}
             className="!w-screen object-cover !z-0"
             src={mockupEventDetail.image}
             alt={mockupEventDetail.name}
-            style={{ filter: 'blur(8px) brightness(0.5)', transform: 'scale(1.1)' }}
+            style={{ filter: 'blur(10px) brightness(0.5)', transform: 'scale(1.2)' }}
           />
         </div>
         {/* Content */}
@@ -258,10 +235,9 @@ export default async function EventDetailPage({
                   <Tag color="orange">HOT</Tag>
                   <Tag color="red">GIỚI HẠN SỐ LƯỢNG</Tag>
                 </div>
-                <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold leading-tight mb-4">
+                <h1 className="text-2xl lg:text-3xl  font-bold leading-tight mb-4">
                   {mockupEventDetail.name}
                 </h1>
-                <EventStats />
               </div>
 
               <EventBasicInformation
@@ -279,10 +255,6 @@ export default async function EventDetailPage({
                     value: `Từ ${priceRange.minPrice.toLocaleString('vi-VN')} VNĐ đến ${priceRange.maxPrice.toLocaleString('vi-VN')} VNĐ`,
                   },
                   {
-                    icon: <IoTimeOutline size={24} />,
-                    value: "Thời gian: 3 tiếng (có giải lao 15 phút)",
-                  },
-                  {
                     icon: <IoPersonOutline size={24} />,
                     value: `Tối đa ${mockupEventDetail.maxBuy} vé/người mua`,
                   },
@@ -296,8 +268,9 @@ export default async function EventDetailPage({
       </section>
 
       {/* Content Sections */}
-      <Container>
-        <div className="py-12 space-y-8">
+
+      <Container >
+        <div className="py-12 !space-y-8 ">
           {/* Event Description */}
           <Card className="shadow-sm">
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">Giới thiệu sự kiện</h2>
@@ -319,16 +292,12 @@ export default async function EventDetailPage({
           {/* Seat Map Preview - NEW SECTION */}
           <SeatMapPreview seats={mockupEventDetail.seats} />
 
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Artists & Hosts */}
-            <ArtistSection
-              artists={mockupEventDetail.artists}
-              hosts={mockupEventDetail.hosts}
-            />
+          {/* Artists & Hosts */}
+          <ArtistSection
+            artists={mockupEventDetail.artists}
+            hosts={mockupEventDetail.hosts}
+          />
 
-            {/* Event Highlights */}
-            <EventHighlights />
-          </div>
 
           {/* Important Information */}
           <Card className="bg-yellow-50 border-yellow-200">
@@ -337,32 +306,16 @@ export default async function EventDetailPage({
               Thông tin quan trọng
             </h3>
             <div className="space-y-2 text-gray-700">
-              <p>• Vé đã mua không được hoàn trả, đổi trả trừ trường hợp sự kiện bị hủy</p>
-              <p>• Khán giả vui lòng có mặt trước 30 phút để làm thủ tục vào cổng</p>
-              <p>• Không được mang thức ăn, đồ uống từ bên ngoài vào venue</p>
-              <p>• Trẻ em dưới 6 tuổi không được vào xem</p>
-              <p>• Nghiêm cấm quay phim, chụp ảnh trong suốt chương trình</p>
-            </div>
-          </Card>
-
-          {/* Contact & Support */}
-          <Card>
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Liên hệ & Hỗ trợ</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold text-gray-700 mb-2">Hotline hỗ trợ</h4>
-                <p className="text-blue-600 font-medium">1900 1234</p>
-                <p className="text-gray-600 text-sm">Hoạt động 24/7</p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-700 mb-2">Email</h4>
-                <p className="text-blue-600">support@eticket.vn</p>
-                <p className="text-gray-600 text-sm">Phản hồi trong 2 giờ</p>
-              </div>
+              <p>Vé đã mua không được hoàn trả, đổi trả trừ trường hợp sự kiện bị hủy</p>
+              <p>Khán giả vui lòng có mặt trước 30 phút để làm thủ tục vào cổng</p>
+              <p>Không được mang thức ăn, đồ uống từ bên ngoài vào venue</p>
+              <p>Trẻ em dưới 6 tuổi không được vào xem</p>
+              <p>Nghiêm cấm quay phim, chụp ảnh trong suốt chương trình</p>
             </div>
           </Card>
         </div>
       </Container>
+
 
       {/* Sticky Booking Bar */}
       <StickyBookingBar slug={slug} priceRange={priceRange} />
