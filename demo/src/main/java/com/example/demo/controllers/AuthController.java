@@ -8,7 +8,6 @@ import com.example.demo.repositories.UserRepository;
 import com.example.demo.services.CustomUserDetailsService;
 import com.example.demo.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -43,25 +42,25 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) throws Exception {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
             );
         } catch (BadCredentialsException e){
             throw new Exception("Wrong username or password", e);
         }
 
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginRequest.getUsername());
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginRequest.getEmail());
         String accessToken = jwtUtils.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(accessToken, userDetails));
+        return ResponseEntity.ok(new AuthResponse(accessToken));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest){
-        if (userRepository.existsByUsername(registerRequest.getUsername())){
-            return ResponseEntity.badRequest().body("Username already exists");
+        if (userRepository.existsByEmail(registerRequest.getEmail())){
+            return ResponseEntity.badRequest().body("Email already exists");
         }
 
         UserEntity userEntity = new UserEntity();
-        userEntity.setUsername(registerRequest.getUsername());
+        userEntity.setEmail(registerRequest.getEmail());
         userEntity.setPassword(
                 passwordEncoder.encode(registerRequest.getPassword())
         );

@@ -17,6 +17,6 @@ public class UserEntity {
     @GeneratedValue(generator = "UUID")
     @UuidGenerator
     private UUID id;
-    private String username;
+    private String email;
     private String password;
 }

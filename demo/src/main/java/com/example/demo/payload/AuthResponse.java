@@ -10,5 +10,4 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 public class AuthResponse {
     String accessToken;
-    UserDetails userResponse;
 }
