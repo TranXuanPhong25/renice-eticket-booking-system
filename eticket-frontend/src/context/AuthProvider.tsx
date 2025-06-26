@@ -1,57 +1,107 @@
 "use client"
 import { createContext, useContext, useState, useEffect } from 'react';
-type AuthContextType = {
-   user: any; // Replace with your user type
-   loading: boolean;
-   login: (email: string, password: string) => Promise<any>;
-   register: (email: string, password: string) => Promise<any>;
-   logout: () => Promise<void>;
-   loginWithRedirect: (redirectTo: string) => Promise<void>;
-   checkAuthStatus: () => Promise<void>;
-}
-import { loginAction, register, logoutAction } from '@/server/auth'; // Adjust the import path as necessary
+import { loginAction, register as registerAction, logoutAction } from '@/server/auth';
 import { redirect, useRouter } from 'next/navigation';
+import axiosClient from '@/utils/axiosClient';
+
+type User = {
+  id: string;
+  email: string;
+  name?: string;
+  role: string;
+};
+
+type AuthContextType = {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<any>;
+  register: (email: string, password: string) => Promise<any>;
+  logout: () => Promise<void>;
+  loginWithRedirect: (redirectTo: string) => Promise<void>;
+  checkAuthStatus: () => Promise<void>;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-   const [user, setUser] = useState(null);
+   const [user, setUser] = useState<User | null>(null);
    const [loading, setLoading] = useState(true);
    const [redirectTo, setRedirectTo] = useState("/");
    const router = useRouter();
+   
    // Check auth status on mount
    useEffect(() => {
       checkAuthStatus();
    }, []);
+
    const loginWithRedirect = async (redirectTo: string) => {
       setRedirectTo(redirectTo);
-      redirect('/auth/login');
+      router.push('/auth/login');
    };
+
    const checkAuthStatus = async () => {
       try {
          setLoading(true);
-         // This will include session cookie automatically
-         // const response = await axios.get(process.env.NEXT_PUBLIC_API + '/auth/me', { withCredentials: true });
-         // setUser(response.data);
+         // Use axiosClient which has withCredentials set to true
+         // This ensures cookies are sent with the request
+         const response = await axiosClient.get('/auth/me');
+         setUser(response.data);
       } catch (error) {
+         console.error('Auth check failed:', error);
          setUser(null);
       } finally {
          setLoading(false);
       }
    };
+
    const logout = async () => {
-      logoutAction(setUser);
-   };
-   const login = async (email: string, password: string) => {
-      const response = await loginAction(email, password);
-      setUser(response);
-      const dest = redirectTo;
-      if (redirectTo) {
-         setRedirectTo("/");
+      try {
+         await logoutAction(setUser);
+         router.push('/auth/login');
+      } catch (error) {
+         console.error('Logout failed:', error);
       }
-      router.push(dest ?? "/");
-   }
+   };
+
+   const login = async (email: string, password: string) => {
+      try {
+         const response = await loginAction(email, password);
+         setUser(response.user);
+         
+         const dest = redirectTo;
+         if (redirectTo !== "/") {
+            setRedirectTo("/");
+         }
+         router.push(dest);
+         return response;
+      } catch (error) {
+         console.error('Login failed:', error);
+         throw error;
+      }
+   };
+
+   const register = async (email: string, password: string) => {
+      try {
+         const response = await registerAction(email, password);
+         setUser(response.user);
+         router.push('/');
+         return response;
+      } catch (error) {
+         console.error('Registration failed:', error);
+         throw error;
+      }
+   };
+
    return (
-      <AuthContext.Provider value={{ user, loading, login, register, logout, loginWithRedirect, checkAuthStatus }}>
+      <AuthContext.Provider value={{ 
+         user, 
+         loading, 
+         login, 
+         register, 
+         logout, 
+         loginWithRedirect, 
+         checkAuthStatus 
+      }}>
          {children}
       </AuthContext.Provider>
    );

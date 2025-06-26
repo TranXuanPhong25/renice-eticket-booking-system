@@ -1,6 +1,9 @@
 package com.example.demo.controllers;
 
+import com.example.demo.dtos.UserDetailsDTO;
+import com.example.demo.entities.CustomUserDetails;
 import com.example.demo.entities.UserEntity;
+import com.example.demo.enums.Role;
 import com.example.demo.payload.AuthResponse;
 import com.example.demo.payload.LoginRequest;
 import com.example.demo.payload.RegisterRequest;
@@ -12,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.jaas.AuthorityGranter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,10 +52,11 @@ public class AuthController {
         } catch (BadCredentialsException e){
             throw new Exception("Wrong username or password", e);
         }
-
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginRequest.getEmail());
+        String username = loginRequest.getEmail();
+        CustomUserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
         String accessToken = jwtUtils.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponse(accessToken));
+        UserDetailsDTO userDetailsDTO= new UserDetailsDTO(userDetails);
+        return ResponseEntity.ok(new AuthResponse(accessToken,userDetailsDTO));
     }
 
     @PostMapping("/register")
@@ -64,6 +70,8 @@ public class AuthController {
         userEntity.setPassword(
                 passwordEncoder.encode(registerRequest.getPassword())
         );
+        userEntity.setUsername(registerRequest.getEmail());
+        userEntity.setRole(Role.USER);
         userRepository.save(userEntity);
         return ResponseEntity.ok(userEntity);
     }

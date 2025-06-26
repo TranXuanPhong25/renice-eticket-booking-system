@@ -1,5 +1,6 @@
 package com.example.demo.services;
 
+import com.example.demo.entities.CustomUserDetails;
 import com.example.demo.entities.UserEntity;
 import com.example.demo.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
 
-        return new User(userEntity.getEmail(), userEntity.getPassword(), new ArrayList<>());
+        return new CustomUserDetails(userEntity);
     }
 }

@@ -7,14 +7,18 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -27,21 +31,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
+        String[] cookieHeader = request.getHeader("Cookie") != null?
+                request.getHeader("Cookie").split("; "):
+                new String[0];
         String username = null;
         String jwt = null;
 
-        System.out.println("AuthHeader" + authHeader);
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")){
-            jwt = authHeader.substring(7);
+        if (cookieHeader.length != 0){
+
+            for (String cookie : cookieHeader) {
+                if (cookie.startsWith("access_token=")) {
+                    jwt = cookie.substring(13);
+                    break;
+                }
+            }
+
             try {
                 username = jwtUtils.extractUserName(jwt);
-            } catch (Exception e){
+            } catch (Exception ignored){
 
             }
         }
-
         if (username != null  && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
             if (jwtUtils.validateToken(jwt, userDetails)){
@@ -50,9 +61,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }
-
         filterChain.doFilter(request, response);
 
 
     }
+
 }

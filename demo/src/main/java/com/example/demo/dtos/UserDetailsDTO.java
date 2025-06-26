@@ -1,5 +1,6 @@
 package com.example.demo.dtos;
 
+import com.example.demo.entities.CustomUserDetails;
 import com.example.demo.entities.UserEntity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -16,7 +17,7 @@ public class UserDetailsDTO {
     private UUID id;
     private String email;
     UserDetailsDTO() {}
-    UserDetailsDTO(UserEntity user) {
+    public UserDetailsDTO(CustomUserDetails user) {
         this.id = user.getId();
         this.email = user.getEmail();
     }

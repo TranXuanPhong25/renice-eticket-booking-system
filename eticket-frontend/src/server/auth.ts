@@ -3,28 +3,73 @@ import axios from "axios";
 import { cookies } from "next/headers";
 import { SetStateAction } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_API || 'http://localhost:8080/api';
+
 const loginAction = async (email: string, password: string) => {
-   const body = { email:email,password:password }
-   const response = await axios.post(process.env.NEXT_PUBLIC_API + '/auth/login',body , { withCredentials: true });
-   (await cookies()).set('access_token', response.data.accessToken, {
-      httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-   });
-   return response.data;
+   try {
+      const body = { email, password };
+      const response = await axios.post(`${API_URL}/auth/login`, body, { 
+         withCredentials: true 
+      });
+      
+      // The backend should set the JSESSIONID cookie automatically
+      // Additionally, we can set an access_token cookie if provided
+      if (response.data.accessToken) {
+         // Set an httpOnly cookie for secure storage that the browser will send automatically
+         (await cookies()).set('access_token', response.data.accessToken, {
+            httpOnly: true,
+            path: '/',
+            sameSite: 'lax',
+         });
+      }
+      
+      // Return the data including the access token to the client
+      // This allows the client to use it for the Authorization header
+      return response.data;
+   } catch (error: any) {
+      console.error('Login action failed:', error.response?.data || error.message);
+      throw error;
+   }
 };
+
 const register = async (email: string, password: string) => {
-   const response = await axios.post(process.env.NEXT_PUBLIC_API + '/auth/register', { email, password }, { withCredentials: true });
-   (await cookies()).set('access_token', response.data.access_token, {
-      httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-   });
-   return response.data;
-}
-const logoutAction = async (setUser:SetStateAction<any>) => {
-   await axios.post(process.env.NEXT_PUBLIC_API + '/auth/logout', {}, { withCredentials: true });
-   setUser(null);
+   try {
+      const response = await axios.post(`${API_URL}/auth/register`, { 
+         email, 
+         password 
+      }, { 
+         withCredentials: true 
+      });
+      
+      // Handle any token in the response
+      if (response.data.accessToken) {
+         (await cookies()).set('access_token', response.data.accessToken, {
+            httpOnly: true,
+            path: '/',
+            sameSite: 'lax',
+         });
+      }
+      
+      return response.data;
+   } catch (error: any) {
+      console.error('Register action failed:', error.response?.data || error.message);
+      throw error;
+   }
+};
+
+const logoutAction = async (setUser: SetStateAction<any>) => {
+   try {
+      await axios.post(`${API_URL}/auth/logout`, {}, { 
+         withCredentials: true 
+      });
+      
+      // Clear cookies
+      (await cookies()).delete('access_token');
+      setUser(null);
+   } catch (error: any) {
+      console.error('Logout action failed:', error.response?.data || error.message);
+      throw error;
+   }
 };
 
 export { loginAction, register, logoutAction };

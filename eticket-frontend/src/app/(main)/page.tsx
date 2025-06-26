@@ -1,15 +1,17 @@
 import { Container } from "@/components/Container";
-import { EventList } from "@/module/home/EventList";
-import { EventSlider } from "@/module/home/EventSlider";
+import dynamic from "next/dynamic";
+
+// Use dynamic import with no SSR for the client component
+const EventsSection = dynamic(
+  () => import("@/module/home/EventsSection")
+
+);
 
 export default function Home() {
   return (
     <Container>
       <div className="px-5">
-        <EventSlider />
-
-        <h2 className="text-2xl font-bold mb-4">Sự kiện</h2>
-        <EventList />
+        <EventsSection />
       </div>
     </Container>
   );
