@@ -11,4 +11,7 @@ import java.util.UUID;
 public interface ZoneRepository extends JpaRepository<ZoneEntity, UUID> {
     @Query(value = "select * from tickets t where t.id in :ticketIds", nativeQuery = true)
     List<ZoneEntity> getAllTicketByIds(@Param("ticketIds") List<UUID> ticketIds);
+
+    @Query(value = "select * from zones z where z.event_id = :eventId ", nativeQuery = true)
+    List<ZoneEntity> getZonesOfEventId(@Param("eventId") UUID id);
 }

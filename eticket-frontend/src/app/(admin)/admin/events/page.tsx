@@ -95,7 +95,7 @@ export default function EventsManagement() {
             ghost 
             icon={<EyeOutlined />} 
             size="small"
-            onClick={() => router.push(`/events/${record.id}`)}
+            onClick={() => router.push(`/${record.id}`)}
           >
             Xem
           </Button>
@@ -106,6 +106,15 @@ export default function EventsManagement() {
             onClick={() => router.push(`/admin/events/${record.id}/edit`)}
           >
             Sửa
+          </Button>
+          <Button 
+            type="primary" 
+            style={{ background: '#52c41a' }}
+            icon={<PlusOutlined />} 
+            size="small"
+            onClick={() => router.push(`/admin/events/${record.id}/zones`)}
+          >
+            Quản lý Khu vực
           </Button>
           <Popconfirm
             title="Xóa sự kiện"

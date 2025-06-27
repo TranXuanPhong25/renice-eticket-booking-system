@@ -19,7 +19,8 @@ import {
    Row,
    Col,
    Breadcrumb,
-   Spin
+   Spin,
+   Alert
 } from 'antd';
 import { PlusOutlined, InboxOutlined, ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
@@ -124,7 +125,13 @@ export default function CreateEvent() {
                Quay lại danh sách
             </Button>
          </div>
-         Nhấp
+         <Alert
+            message="Lưu ý về quy trình tạo sự kiện"
+            description="Bước 1: Tạo thông tin cơ bản của sự kiện. Bước 2: Sau khi tạo sự kiện, bạn có thể tạo các khu vực ngồi (zones) từ danh sách sự kiện."
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+         />
          <Card>
             <Form
                form={form}
@@ -261,13 +268,14 @@ export default function CreateEvent() {
                   <Col span={12}>
                      <Form.Item
                         name="maxBuy"
-                        label="Số lượng vé tối đa"
+                        label="Số lượng vé tối đa mỗi người"
                         rules={[{ required: true }]}
+                        help="Giới hạn số vé tối đa mà mỗi người có thể mua."
                      >
                         <InputNumber
                            min={1}
                            style={{ width: '100%' }}
-                           placeholder="Nhập số lượng vé"
+                           placeholder="Ví dụ: 4"
                         />
                      </Form.Item>
                   </Col>
@@ -277,40 +285,25 @@ export default function CreateEvent() {
 
                <Row gutter={24}>
                   <Col span={24}>
-                     <Title level={4}>Thông tin vé và giá</Title>
-                  </Col>
-
-                  <Col span={8}>
-                     <Form.Item
-                        name="name"
-                        label="Loại vé"
-                        rules={[{ required: true }]}
-                     >
-                        <Select placeholder="Chọn loại vé">
-                           <Option value="standard">Vé thường</Option>
-                           <Option value="vip">Vé VIP</Option>
-                           <Option value="free">Vé miễn phí</Option>
-                        </Select>
-                     </Form.Item>
+                     <Title level={4}>Thông tin giá cơ bản</Title>
                   </Col>
 
                   <Col span={8}>
                      <Form.Item
                         name="price"
-                        label="Giá vé (VNĐ)"
+                        label="Giá vé cơ bản (VNĐ)"
                         rules={[{ required: true }]}
+                        help="Giá vé cơ bản để tham khảo. Bạn sẽ tạo các khu vực với giá khác nhau sau khi tạo sự kiện."
                      >
                         <InputNumber
                            min={0}
                            step={10000}
                            style={{ width: '100%' }}
-                           placeholder="Nhập giá vé"
+                           placeholder="Nhập giá vé cơ bản"
                            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                         />
                      </Form.Item>
                   </Col>
-
-
                </Row>
 
                <Divider />
