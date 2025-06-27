@@ -9,4 +9,5 @@ public interface EventService {
     List<EventEntity> getListEvent();
     EventEntity createEvent(EventEntity eventEntity);
     EventEntity updateEvent(UUID id,EventEntity eventEntity);
+    EventEntity getEventById(UUID id);
 }

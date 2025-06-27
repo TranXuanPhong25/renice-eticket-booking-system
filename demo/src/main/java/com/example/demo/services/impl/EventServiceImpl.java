@@ -39,4 +39,10 @@ public class EventServiceImpl implements EventService {
         // Add more fields if needed
         return eventRepository.save(existingEvent);
     }
+
+    @Override
+    public EventEntity getEventById(UUID id) {
+        return eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found with id: " + id));
+    }
 }

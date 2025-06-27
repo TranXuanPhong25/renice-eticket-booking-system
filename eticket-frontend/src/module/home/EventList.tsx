@@ -20,15 +20,14 @@ const EventItem = (props: any) => {
         style={{ height: 200, objectFit: 'cover' }}
         fallback="https://placehold.co/600x400?text=No+Image"
       />
-      <Tag color={tagColor}>{label}</Tag>
-      <div className="flex flex-col gap-1 mt-2">
-        <div className="flex justify-between text-sm text-gray-500">
-          {data.location}, {data.startedDate || data.startDate}
+      <Tag color={tagColor}>{label}</Tag>        <div className="flex flex-col gap-1 mt-2">
+          <div className="flex justify-between text-sm text-gray-500">
+            {data.location}, {data.startedDate || data.startDate}
+          </div>
+          <Link href={`/${data.slug || data.id}`}>
+            <div className="text-lg font-bold">{data.title || data.name}</div>
+          </Link>
         </div>
-        <Link href={`/${data.id}`}>
-          <div className="text-lg font-bold">{data.title || data.name}</div>
-        </Link>
-      </div>
     </div>
   );
 };
@@ -56,7 +55,9 @@ export const EventList = ({ category }: EventListProps) => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <Spin size="large" tip="Đang tải sự kiện..." />
+        <Spin size="large" tip="Đang tải sự kiện ...">
+          <div className="p-4 mt-16 text-transparent">Đang tải sự kiện...</div>
+        </Spin>
       </div>
     );
   }

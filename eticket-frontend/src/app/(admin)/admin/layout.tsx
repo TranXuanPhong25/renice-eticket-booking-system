@@ -165,7 +165,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             arrow
           >
             <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>{user?.name || 'Admin'}</span>
+              <span>{user?.username || 'Admin'}</span>
               <Avatar 
                 style={{ backgroundColor: '#1890ff' }}
                 icon={<UserOutlined />} 

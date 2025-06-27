@@ -21,6 +21,15 @@ public class EventController {
         return ResponseEntity.ok(eventService.getListEvent());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<EventEntity> getEventById(@PathVariable UUID id) {
+        EventEntity event = eventService.getEventById(id);
+        if(event == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(event);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<EventEntity> createEvent(@RequestBody  EventEntity eventEntity){
@@ -28,6 +37,7 @@ public class EventController {
         return ResponseEntity.ok(responseEntity);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<EventEntity> updateEvent(@PathVariable UUID id, @RequestBody EventEntity eventEntity) {
         EventEntity updatedEvent = eventService.updateEvent(id, eventEntity);

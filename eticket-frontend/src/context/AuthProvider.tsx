@@ -7,8 +7,10 @@ import axiosClient from '@/utils/axiosClient';
 type User = {
   id: string;
   email: string;
-  name?: string;
+  username?: string;
   role: string;
+  avatar?: string;
+  userDetails?: Record<string, any>; // Additional user details from the API
 };
 
 type AuthContextType = {
@@ -19,9 +21,39 @@ type AuthContextType = {
   logout: () => Promise<void>;
   loginWithRedirect: (redirectTo: string) => Promise<void>;
   checkAuthStatus: () => Promise<void>;
+  updateUserDetails: (details: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Store and retrieve user from localStorage
+const LOCAL_STORAGE_USER_KEY = 'eticket_user';
+
+const getUserFromStorage = (): User | null => {
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    const storedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+    return storedUser ? JSON.parse(storedUser) : null;
+  } catch (error) {
+    console.error('Error reading user from localStorage:', error);
+    return null;
+  }
+};
+
+const saveUserToStorage = (user: User | null) => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    if (user) {
+      localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+    }
+  } catch (error) {
+    console.error('Error saving user to localStorage:', error);
+  }
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
    const [user, setUser] = useState<User | null>(null);
@@ -29,10 +61,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    const [redirectTo, setRedirectTo] = useState("/");
    const router = useRouter();
    
-   // Check auth status on mount
+   // Load user from localStorage on mount and set up auth check
    useEffect(() => {
+      // First try to get user from localStorage to prevent flicker
+      const storedUser = getUserFromStorage();
+      if (storedUser) {
+        setUser(storedUser);
+      }
+      
+      // Then verify with the server
       checkAuthStatus();
    }, []);
+
+   // Custom setter for user that also updates localStorage
+   const updateUser = (newUser: User | null) => {
+      setUser(newUser);
+      saveUserToStorage(newUser);
+   };
+   
+   // Update specific user details without replacing the entire user object
+   const updateUserDetails = (details: Partial<User>) => {
+      if (!user) return;
+      
+      const updatedUser = { ...user, ...details };
+      updateUser(updatedUser);
+   };
 
    const loginWithRedirect = async (redirectTo: string) => {
       setRedirectTo(redirectTo);
@@ -45,10 +98,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
          // Use axiosClient which has withCredentials set to true
          // This ensures cookies are sent with the request
          const response = await axiosClient.get('/auth/me');
-         setUser(response.data);
+         updateUser(response.data);
       } catch (error) {
          console.error('Auth check failed:', error);
-         setUser(null);
+         updateUser(null);
       } finally {
          setLoading(false);
       }
@@ -56,8 +109,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
    const logout = async () => {
       try {
-         await logoutAction(setUser);
-         router.push('/auth/login');
+         await logoutAction();
+         updateUser(null);
       } catch (error) {
          console.error('Logout failed:', error);
       }
@@ -66,7 +119,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    const login = async (email: string, password: string) => {
       try {
          const response = await loginAction(email, password);
-         setUser(response.user);
+         const user = response.user;
+         updateUser(user);
          
          const dest = redirectTo;
          if (redirectTo !== "/") {
@@ -83,8 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    const register = async (email: string, password: string) => {
       try {
          const response = await registerAction(email, password);
-         setUser(response.user);
-         router.push('/');
+         updateUser(response.user);
          return response;
       } catch (error) {
          console.error('Registration failed:', error);
@@ -100,7 +153,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
          register, 
          logout, 
          loginWithRedirect, 
-         checkAuthStatus 
+         checkAuthStatus,
+         updateUserDetails
       }}>
          {children}
       </AuthContext.Provider>

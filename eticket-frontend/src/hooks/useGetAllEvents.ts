@@ -19,6 +19,7 @@ export interface Event {
   totalTickets?: number; // This may be calculated from maxBuy
   createdAt: string;
   updatedAt: string;
+  slug?: string;  // Optional slug for URLs
 }
 
 // Hàm gọi API lấy danh sách sự kiện
@@ -62,6 +63,9 @@ export const mapEventToUIFormat = (event: Event) => {
     eventType = "live";
   }
   
+  // Generate a slug if not provided
+  const slug = event.slug || generateSlug(event.name, event.id);
+  
   return {
     id: event.id,
     title: event.name,
@@ -73,6 +77,20 @@ export const mapEventToUIFormat = (event: Event) => {
     description: event.description,
     image: event.image,
     price: event.price,
-    type: eventType  // Add event type
+    type: eventType,  // Add event type
+    slug: slug  // Add slug for URLs
   };
 };
+
+// Helper function to generate a slug from a title
+function generateSlug(title: string, id: string): string {
+  // Convert to lowercase, replace non-alphanumeric with hyphens
+  const baseSlug = title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  
+  // Add ID to ensure uniqueness
+  return `${baseSlug}-${id}`;
+}

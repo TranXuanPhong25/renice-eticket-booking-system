@@ -12,7 +12,9 @@ export const EventSlider = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[250px]">
-        <Spin size="large" tip="Đang tải sự kiện nổi bật..." />
+        <Spin size="large" tip="Đang tải sự kiện nổi bật..." >
+          <div className="p-4 mt-16 text-transparent">Đang tải sự kiện nổi bật...</div>
+        </Spin>
       </div>
     );
   }
@@ -34,7 +36,7 @@ export const EventSlider = () => {
       <Carousel autoplay className="mb-5">
         {featuredEvents.map(event => (
           <div key={event.id} className="h-[250px]">
-            <Link href={`/${event.id}`}>
+            <Link href={`/${event.slug || event.id}`}>
               <img
                 className="object-cover w-full h-full"
                 src={event.image || "https://placehold.co/1600x900?text=No+Image"}

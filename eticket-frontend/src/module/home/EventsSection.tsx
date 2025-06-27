@@ -6,10 +6,13 @@ import { useState } from "react";
 import { Tabs, Button } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import { useGetAllEvents } from "@/hooks/useGetAllEvents";
+import { useAuth } from "@/context/AuthProvider";
 
 type TabPosition = "all" | "music" | "sport" | "fan_meeting" | "live";
 
 export default function EventsSection() {
+  const auth = useAuth();
+  console.log(auth);
   const [activeTab, setActiveTab] = useState<TabPosition>("all");
   const { refetch } = useGetAllEvents();
 

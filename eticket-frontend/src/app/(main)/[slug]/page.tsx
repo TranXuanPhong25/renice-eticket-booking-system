@@ -1,9 +1,10 @@
+"use client";
+
 import { Container } from "@/components/Container";
 import { SeatMapPreview } from "@/components/event/SeatMapPreview";
-import { mockupEventDetail } from "@/mockups/event.mockup";
 import CopyLinkButton from "@/components/event/CopyLinkButton";
 import { getMaxMinPrice } from "@/utils/event.utils";
-import { Button, Image, Tag, Card, Divider, Avatar, Badge, Breadcrumb } from "antd";
+import { Button, Image, Tag, Card, Divider, Avatar, Badge, Breadcrumb, Skeleton, Alert, Result } from "antd";
 import {
   IoCalendar,
   IoLocationOutline,
@@ -19,9 +20,12 @@ import {
 } from "react-icons/io5";
 import { FaFacebook, FaYoutube, FaTwitter, FaInstagram } from "react-icons/fa";
 import Link from "next/link";
-const EventBasicInformation = (props: any) => {
-  const { data } = props;
+import { useGetEventBySlug, mapEventToDetailedFormat, EventDetails } from "@/hooks/useGetEventBySlug";
+import { useEffect, useState } from "react";
+import { mockupEventDetail } from "@/mockups/event.mockup";
+import { use } from 'react';
 
+const EventBasicInformation = ({ data }: { data: any[] }) => {
   return (
     <div className="flex flex-col gap-4">
       {data.map((item: any, index: number) => (
@@ -33,8 +37,6 @@ const EventBasicInformation = (props: any) => {
     </div>
   );
 };
-
-
 
 const SocialLinks = ({ socials }: { socials: any }) => {
   return (
@@ -51,7 +53,7 @@ const SocialLinks = ({ socials }: { socials: any }) => {
           <FaYoutube size={24} />
         </Link>
       )}
-      <CopyLinkButton link={`https://eticket.vn/${socials.slug}`} />
+      <CopyLinkButton link={`${typeof window !== 'undefined' ? window.location.origin : ''}/${socials.slug}`} />
     </div>
   );
 };
@@ -82,7 +84,6 @@ const ArtistSection = ({ artists, hosts }: { artists: any[], hosts: any[] }) => 
       </div>
 
       {hosts.length > 0 && (
-
         <div>
           <h4 className="text-xl font-semibold mb-4 text-gray-700">Đơn vị tổ chức</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -94,12 +95,10 @@ const ArtistSection = ({ artists, hosts }: { artists: any[], hosts: any[] }) => 
             ))}
           </div>
         </div>
-
       )}
     </div>
   );
 };
-
 
 const EventCountdown = ({ date }: { date: string }) => {
   return (
@@ -146,15 +145,80 @@ const StickyBookingBar = ({ slug, priceRange }: { slug: string, priceRange: any 
     </div>
   );
 };
-
-export default async function EventDetailPage({
+export default function EventDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  const resolvedParams = use(params);
+  const { slug } = resolvedParams;
+  const { data: eventData, isLoading, error } = useGetEventBySlug(slug);
+  const [event, setEvent] = useState<EventDetails | null>(null);
+  const [priceRange, setPriceRange] = useState({ minPrice: 0, maxPrice: 0 });
 
-  const priceRange = getMaxMinPrice(mockupEventDetail.seats);
+  useEffect(() => {
+    // If we have data from the API, use it
+    if (eventData) {
+      const mappedEvent = mapEventToDetailedFormat(eventData);
+      setEvent(mappedEvent);
+      
+      // Calculate price range
+      if (mappedEvent.seats && mappedEvent.seats.length > 0) {
+        setPriceRange(getMaxMinPrice(mappedEvent.seats));
+      } else if (mappedEvent.price) {
+        // If no seats but has a price
+        setPriceRange({ minPrice: mappedEvent.price, maxPrice: mappedEvent.price });
+      }
+    } else if (!isLoading && !error) {
+      // Fallback to mockup data if no API data and not loading/error
+      setEvent(mockupEventDetail as unknown as EventDetails);
+      setPriceRange(getMaxMinPrice(mockupEventDetail.seats));
+    }
+  }, [eventData, isLoading, error]);
+
+  if (isLoading) {
+    return (
+      <Container>
+        <div className="py-12">
+          <Skeleton active avatar paragraph={{ rows: 4 }} />
+        </div>
+      </Container>
+    );
+  }
+
+  if (error && !event) {
+    return (
+      <Container>
+        <div className="py-12">
+          <Result
+            status="404"
+            title="Không tìm thấy sự kiện"
+            subTitle="Xin lỗi, sự kiện bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+            extra={
+              <Button type="primary" href="/">
+                Trở về trang chủ
+              </Button>
+            }
+          />
+        </div>
+      </Container>
+    );
+  }
+
+  if (!event) {
+    return (
+      <Container>
+        <div className="py-12">
+          <Alert
+            message="Dữ liệu không khả dụng"
+            description="Không thể tải thông tin sự kiện. Vui lòng thử lại sau."
+            type="error"
+            showIcon
+          />
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -178,7 +242,7 @@ export default async function EventDetailPage({
                   title: 'Sự kiện',
                 },
                 {
-                  title: mockupEventDetail.name,
+                  title: event.name,
                 },
               ]}
             />
@@ -193,8 +257,8 @@ export default async function EventDetailPage({
           <Image
             preview={false}
             className="!w-screen object-cover !z-0"
-            src={mockupEventDetail.image}
-            alt={mockupEventDetail.name}
+            src={event.image}
+            alt={event.name}
             style={{ filter: 'blur(10px) brightness(0.5)', transform: 'scale(1.2)' }}
           />
         </div>
@@ -207,12 +271,12 @@ export default async function EventDetailPage({
                 <Image
                   preview={false}
                   className="rounded-2xl overflow-hidden shadow-2xl w-full"
-                  src={mockupEventDetail.image}
-                  alt={mockupEventDetail.name}
+                  src={event.image}
+                  alt={event.name}
                 />
                 <div className="absolute top-4 left-4">
                   <Tag color="green" className="text-sm font-semibold">
-                    {mockupEventDetail.status}
+                    {event.status || 'OPEN'}
                   </Tag>
                 </div>
               </div>
@@ -231,12 +295,12 @@ export default async function EventDetailPage({
             <div className="text-white space-y-6 z-10">
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <Tag color="blue">{mockupEventDetail.type.toUpperCase()}</Tag>
+                  <Tag color="blue">{(event.type || 'MUSIC').toUpperCase()}</Tag>
                   <Tag color="orange">HOT</Tag>
                   <Tag color="red">GIỚI HẠN SỐ LƯỢNG</Tag>
                 </div>
-                <h1 className="text-2xl lg:text-3xl  font-bold leading-tight mb-4">
-                  {mockupEventDetail.name}
+                <h1 className="text-2xl lg:text-3xl font-bold leading-tight mb-4">
+                  {event.name}
                 </h1>
               </div>
 
@@ -244,11 +308,11 @@ export default async function EventDetailPage({
                 data={[
                   {
                     icon: <IoCalendar size={24} />,
-                    value: `${mockupEventDetail.startedDate} - 20:00`,
+                    value: `${event.startedDate || 'TBA'} - ${event.startedTime || '20:00'}`,
                   },
                   {
                     icon: <IoLocationOutline size={24} />,
-                    value: mockupEventDetail.address,
+                    value: event.address || event.location || 'TBA',
                   },
                   {
                     icon: <IoPricetag size={24} />,
@@ -256,48 +320,54 @@ export default async function EventDetailPage({
                   },
                   {
                     icon: <IoPersonOutline size={24} />,
-                    value: `Tối đa ${mockupEventDetail.maxBuy} vé/người mua`,
+                    value: `Tối đa ${event.maxBuy || 4} vé/người mua`,
                   },
                 ]}
               />
 
-              <SocialLinks socials={mockupEventDetail.socials} />
+              <SocialLinks socials={{ ...event.socials, slug }} />
             </div>
           </div>
         </Container>
       </section>
 
       {/* Content Sections */}
-
-      <Container >
-        <div className="py-12 !space-y-8 ">
+      <Container>
+        <div className="py-12 !space-y-8">
           {/* Event Description */}
           <Card className="shadow-sm">
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">Giới thiệu sự kiện</h2>
             <div className="prose max-w-none text-gray-600 leading-relaxed">
-              <p>{mockupEventDetail.description}</p>
-              <p>
-                Đây là một sự kiện âm nhạc đặc biệt không thể bỏ lỡ trong năm 2025.
-                Với sự tham gia của những nghệ sĩ hàng đầu, hệ thống âm thanh và ánh sáng
-                chuyên nghiệp, chúng tôi cam kết mang đến cho khán giả một trải nghiệm
-                âm nhạc tuyệt vời nhất.
-              </p>
-              <p>
-                Sự kiện sẽ diễn ra tại {mockupEventDetail.address}, một trong những
-                địa điểm tổ chức sự kiện uy tín và chuyên nghiệp nhất tại Hà Nội.
-              </p>
+              <p>{event.description}</p>
+              {!event.description?.includes('Đây là một sự kiện') && (
+                <>
+                  <p>
+                    Đây là một sự kiện âm nhạc đặc biệt không thể bỏ lỡ trong năm 2025.
+                    Với sự tham gia của những nghệ sĩ hàng đầu, hệ thống âm thanh và ánh sáng
+                    chuyên nghiệp, chúng tôi cam kết mang đến cho khán giả một trải nghiệm
+                    âm nhạc tuyệt vời nhất.
+                  </p>
+                  <p>
+                    Sự kiện sẽ diễn ra tại {event.address || event.location}, một trong những
+                    địa điểm tổ chức sự kiện uy tín và chuyên nghiệp nhất tại Hà Nội.
+                  </p>
+                </>
+              )}
             </div>
           </Card>
 
-          {/* Seat Map Preview - NEW SECTION */}
-          <SeatMapPreview seats={mockupEventDetail.seats} />
+          {/* Seat Map Preview - if available */}
+          {event.seats && event.seats.length > 0 && (
+            <SeatMapPreview seats={event.seats} />
+          )}
 
-          {/* Artists & Hosts */}
-          <ArtistSection
-            artists={mockupEventDetail.artists}
-            hosts={mockupEventDetail.hosts}
-          />
-
+          {/* Artists & Hosts - if available */}
+          {((event.artists && event.artists.length > 0) || (event.hosts && event.hosts.length > 0)) && (
+            <ArtistSection
+              artists={event.artists || []}
+              hosts={event.hosts || []}
+            />
+          )}
 
           {/* Important Information */}
           <Card className="bg-yellow-50 border-yellow-200">
@@ -315,7 +385,6 @@ export default async function EventDetailPage({
           </Card>
         </div>
       </Container>
-
 
       {/* Sticky Booking Bar */}
       <StickyBookingBar slug={slug} priceRange={priceRange} />

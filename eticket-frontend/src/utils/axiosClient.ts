@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base URL cho API - lấy từ biến môi trường hoặc config
-const API_URL = process.env.NEXT_PUBLIC_API || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API || 'http://localhost:8080/api';
 
 // Tạo instance axios với các cấu hình mặc định
 const axiosClient = axios.create({
@@ -15,6 +15,11 @@ const axiosClient = axios.create({
 // Xử lý request trước khi gửi
 axiosClient.interceptors.request.use(
   (config) => {
+    // Check for localStorage token if needed
+    // const token = localStorage.getItem('token');
+    // if (token) {
+    //   config.headers.Authorization = `Bearer ${token}`;
+    // }
     
     return config;
   },
@@ -37,9 +42,15 @@ axiosClient.interceptors.response.use(
     if (errorResponse?.status === 401) {
       console.log('Session expired or unauthorized');
       
-      // Redirect to login page if not already there
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
-        window.location.href = '/auth/login';
+      // Clear any stored user data
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('eticket_user');
+        
+        // Redirect to login page if not already there
+        if (!window.location.pathname.includes('/auth/login')) {
+          const currentPath = window.location.pathname;
+          window.location.href = `/auth/login?redirectTo=${encodeURIComponent(currentPath)}`;
+        }
       }
     }
     

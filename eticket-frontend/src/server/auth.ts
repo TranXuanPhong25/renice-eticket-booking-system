@@ -57,7 +57,7 @@ const register = async (email: string, password: string) => {
    }
 };
 
-const logoutAction = async (setUser: SetStateAction<any>) => {
+const logoutAction = async () => {
    try {
       await axios.post(`${API_URL}/auth/logout`, {}, { 
          withCredentials: true 
@@ -65,7 +65,6 @@ const logoutAction = async (setUser: SetStateAction<any>) => {
       
       // Clear cookies
       (await cookies()).delete('access_token');
-      setUser(null);
    } catch (error: any) {
       console.error('Logout action failed:', error.response?.data || error.message);
       throw error;

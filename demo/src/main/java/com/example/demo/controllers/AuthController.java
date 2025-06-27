@@ -10,19 +10,25 @@ import com.example.demo.payload.RegisterRequest;
 import com.example.demo.repositories.UserRepository;
 import com.example.demo.services.CustomUserDetailsService;
 import com.example.demo.utils.JwtUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -74,5 +80,37 @@ public class AuthController {
         userEntity.setRole(Role.USER);
         userRepository.save(userEntity);
         return ResponseEntity.ok(userEntity);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDetailsDTO> getCurrentUser() {
+        // Get the authenticated user from the security context
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof CustomUserDetails userDetails) {
+            UserDetailsDTO userDetailsDTO = new UserDetailsDTO(userDetails);
+            return ResponseEntity.ok(userDetailsDTO);
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        // Clear the JWT cookie
+        Cookie cookie = new Cookie("access_token", null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0); // Set max age to 0 to delete the cookie
+        response.addCookie(cookie);
+
+        // Invalidate session
+        SecurityContextHolder.clearContext();
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        return ResponseEntity.ok().body(Map.of("message", "Logged out successfully"));
     }
 }
