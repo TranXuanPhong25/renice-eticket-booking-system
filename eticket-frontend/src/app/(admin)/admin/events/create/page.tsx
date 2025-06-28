@@ -24,7 +24,6 @@ import {
 } from 'antd';
 import { PlusOutlined, InboxOutlined, ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import dayjs from 'dayjs';
 import { useCreateEvent, EventFormData } from '@/hooks/useCreateEvent';
 import { handleApiError } from '@/utils/apiErrorHandler';
 
@@ -39,14 +38,17 @@ export default function CreateEvent() {
    const router = useRouter();
    const [imagePreviewUrl, setImagePreviewUrl] = useState('');
    const [imageError, setImageError] = useState(false);
+   const [zoneMapPreviewUrl, setZoneMapPreviewUrl] = useState('');
+   const [zoneMapError, setZoneMapError] = useState(false);
 
    // Theo dõi thay đổi URL ảnh để hiển thị xem trước
-   const formValues = Form.useWatch(['coverUrl'], form);
+   const imageUrl = Form.useWatch('image', form);
+   const zoneMapUrl = Form.useWatch('zoneMapUrl', form);
 
    useEffect(() => {
       // Đợi người dùng nhập xong rồi mới hiển thị ảnh xem trước
       const timer = setTimeout(() => {
-         const url = form.getFieldValue('coverUrl');
+         const url = form.getFieldValue('image');
          if (url) {
             setImagePreviewUrl(url);
             setImageError(false);
@@ -54,33 +56,45 @@ export default function CreateEvent() {
       }, 500);
 
       return () => clearTimeout(timer);
-   }, [formValues, form]);
+   }, [imageUrl, form]);
+
+   useEffect(() => {
+      // Đợi người dùng nhập xong rồi mới hiển thị ảnh sơ đồ khu vực
+      const timer = setTimeout(() => {
+         const url = form.getFieldValue('zoneMapUrl');
+         if (url) {
+            setZoneMapPreviewUrl(url);
+            setZoneMapError(false);
+         }
+      }, 500);
+
+      return () => clearTimeout(timer);
+   }, [zoneMapUrl, form]);
 
    // Sử dụng hook useCreateEvent
    const { mutate: createEvent, isPending } = useCreateEvent();
 
    const onFinish = async (values: any) => {
       try {
-         console.log('Form values:', values);
          // Format lại các giá trị ngày tháng
          const formattedValues: EventFormData = {
             name: values.name,
             description: values.description,
             image: values.image,
-            location: values.location,
+            address: values.address,
             maxBuy: values.maxBuy,
             price: values.price,
             startedDate: values.dateRange[0].unix(), 
             endedDate: values.dateRange[1].unix(),
             startedTime: values.time[0].format('HH:mm'),
             endedTime: values.time[1].format('HH:mm'),
+            zoneMap: values.zoneMap, // Thêm zoneMapUrl vào dữ liệu form
          };
 
          // Gọi API tạo sự kiện thông qua hook
          createEvent(formattedValues, {
             onSuccess: (data) => {
                message.success('Tạo sự kiện thành công!');
-               console.log('Sự kiện đã được tạo:', data);
                router.push('/admin/events');
             },
             onError: (error) => {
@@ -187,7 +201,7 @@ export default function CreateEvent() {
                         <Input
                            placeholder="https://example.com/image.jpg"
                            addonAfter={<EyeOutlined onClick={() => {
-                              const url = form.getFieldValue('coverUrl');
+                              const url = form.getFieldValue('image');
                               if (url) window.open(url, '_blank');
                            }} />}
                         />
@@ -213,6 +227,50 @@ export default function CreateEvent() {
                               }}
                               onLoad={() => {
                                  setImageError(false);
+                              }}
+                           />
+                        </div>
+                     )}
+                  </Col>
+                  
+                  <Col span={24}>
+                     <Form.Item
+                        name="zoneMap"
+                        label="Sơ đồ khu vực (URL)"
+                        rules={[
+                           { type: 'url', message: 'Vui lòng nhập URL hợp lệ!' }
+                        ]}
+                        extra="Nhập URL hình ảnh sơ đồ khu vực của sự kiện (không bắt buộc)"
+                     >
+                        <Input
+                           placeholder="https://example.com/zone-map.jpg"
+                           addonAfter={<EyeOutlined onClick={() => {
+                              const url = form.getFieldValue('zoneMapUrl');
+                              if (url) window.open(url, '_blank');
+                           }} />}
+                        />
+                     </Form.Item>
+                     {zoneMapPreviewUrl && (
+                        <div style={{ marginTop: '-20px', marginBottom: '24px' }}>
+                           <img
+                              src={zoneMapPreviewUrl}
+                              alt="Zone Map Preview"
+                              style={{
+                                 maxWidth: '100%',
+                                 maxHeight: '200px',
+                                 objectFit: 'contain',
+                                 marginTop: '10px',
+                                 border: '1px solid #d9d9d9',
+                                 borderRadius: '8px',
+                                 padding: '4px',
+                                 display: zoneMapError ? 'none' : 'block'
+                              }}
+                              onError={() => {
+                                 setZoneMapError(true);
+                                 message.error('Không thể tải ảnh sơ đồ từ URL này');
+                              }}
+                              onLoad={() => {
+                                 setZoneMapError(false);
                               }}
                            />
                         </div>
@@ -257,7 +315,7 @@ export default function CreateEvent() {
 
                   <Col span={12}>
                      <Form.Item
-                        name="location"
+                        name="address"
                         label="Địa điểm"
                         rules={[{ required: true }]}
                      >

@@ -12,18 +12,15 @@ import {
   IoTimeOutline,
   IoPersonOutline,
   IoTicketOutline,
-  IoShareSocialOutline,
-  IoHeartOutline,
-  IoStarOutline,
-  IoHomeOutline,
-  IoChevronForwardOutline
+
 } from "react-icons/io5";
 import { FaFacebook, FaYoutube, FaTwitter, FaInstagram } from "react-icons/fa";
 import Link from "next/link";
-import { useGetEventBySlug, mapEventToDetailedFormat, EventDetails } from "@/hooks/useGetEventBySlug";
+import { useGetEventById, mapEventToDetailedFormat, EventDetails } from "@/hooks/useGetEventById";
 import { useEffect, useState } from "react";
 import { mockupEventDetail } from "@/mockups/event.mockup";
 import { use } from 'react';
+import { getIdFromSlug } from "@/utils/lib";
 
 const EventBasicInformation = ({ data }: { data: any[] }) => {
   return (
@@ -34,26 +31,6 @@ const EventBasicInformation = ({ data }: { data: any[] }) => {
           <div className="text-gray-100">{item.value}</div>
         </div>
       ))}
-    </div>
-  );
-};
-
-const SocialLinks = ({ socials }: { socials: any }) => {
-  return (
-    <div className="flex gap-3 mt-4 ml-10">
-      {socials.facebook && (
-        <Link href={socials.facebook} target="_blank" rel="noopener noreferrer"
-          className="text-blue-400 hover:text-blue-300 transition-colors">
-          <FaFacebook size={24} />
-        </Link>
-      )}
-      {socials.youtube && (
-        <Link href={socials.youtube} target="_blank" rel="noopener noreferrer"
-          className="text-red-400 hover:text-red-300 transition-colors">
-          <FaYoutube size={24} />
-        </Link>
-      )}
-      <CopyLinkButton link={`${typeof window !== 'undefined' ? window.location.origin : ''}/${socials.slug}`} />
     </div>
   );
 };
@@ -87,7 +64,7 @@ export default function EventDetailPage({
 }) {
   const resolvedParams = use(params);
   const { slug } = resolvedParams;
-  const { data: eventData, isLoading, error } = useGetEventBySlug(slug);
+  const { data: eventData, isLoading, error } = useGetEventById(getIdFromSlug(slug));
   const [event, setEvent] = useState<EventDetails | null>(null);
   const [priceRange, setPriceRange] = useState({ minPrice: 0, maxPrice: 0 });
 
@@ -98,8 +75,8 @@ export default function EventDetailPage({
       setEvent(mappedEvent);
       
       // Calculate price range
-      if (mappedEvent.seats && mappedEvent.seats.length > 0) {
-        setPriceRange(getMaxMinPrice(mappedEvent.seats));
+      if (mappedEvent.zones && mappedEvent.zones.length > 0) {
+        setPriceRange(getMaxMinPrice(mappedEvent.zones));
       } else if (mappedEvent.price) {
         // If no seats but has a price
         setPriceRange({ minPrice: mappedEvent.price, maxPrice: mappedEvent.price });
@@ -154,7 +131,6 @@ export default function EventDetailPage({
       </Container>
     );
   }
-
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -220,7 +196,7 @@ export default function EventDetailPage({
                   },
                   {
                     icon: <IoLocationOutline size={24} />,
-                    value: event.address || event.location || 'TBA',
+                    value: event.address || event.address || 'TBA',
                   },
                   {
                     icon: <IoPricetag size={24} />,
@@ -233,7 +209,6 @@ export default function EventDetailPage({
                 ]}
               />
 
-              <SocialLinks socials={{ ...event.socials, slug }} />
             </div>
           </div>
         </Container>
@@ -249,11 +224,11 @@ export default function EventDetailPage({
               <p>{event.description}</p>
             </div>
           </Card>
-
+          
           {/* Seat Map Preview - if available */}
-          {event.seats && event.seats.length > 0 && (
-            <SeatMapPreview seats={event.seats} />
-          )}
+        
+            <SeatMapPreview event={event} />
+          
 
           {/* Important Information */}
           <Card className="bg-yellow-50 border-yellow-200">

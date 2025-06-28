@@ -43,7 +43,6 @@ export default function RegisterPage() {
       const { email, code, password } = values;
       // Here you would typically send the registration data to your backend
       const response = register(email, password);
-      console.log("Đăng ký thành công với dữ liệu:", response);
    };
 
    return (

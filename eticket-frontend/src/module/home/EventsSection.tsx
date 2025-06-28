@@ -12,7 +12,6 @@ type TabPosition = "all" | "music" | "sport" | "fan_meeting" | "live";
 
 export default function EventsSection() {
   const auth = useAuth();
-  console.log(auth);
   const [activeTab, setActiveTab] = useState<TabPosition>("all");
   const { refetch } = useGetAllEvents();
 

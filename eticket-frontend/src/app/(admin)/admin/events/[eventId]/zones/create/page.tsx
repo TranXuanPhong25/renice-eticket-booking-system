@@ -27,7 +27,7 @@ import {
 import { ArrowLeftOutlined, SaveOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCreateZone } from '@/hooks/useCreateZone';
-import { useGetEventBySlug } from '@/hooks/useGetEventBySlug';
+import { useGetEventById } from '@/hooks/useGetEventById';
 import { ZoneFormData } from '@/types/zone';
 import { useGetEventZones } from '@/hooks/useGetZonesByEvent';
 import { useDeleteZone } from '@/hooks/useDeleteZone';
@@ -49,7 +49,7 @@ export default function CreateZone({ params }: { params: Promise<{ eventId: stri
   const [isEditMode, setIsEditMode] = useState(false);
   
   // Get event details
-  const { data: event, isLoading: eventLoading, error: eventError } = useGetEventBySlug(eventId);
+  const { data: event, isLoading: eventLoading, error: eventError } = useGetEventById(eventId);
   
   // Get existing zones for this event
   const { data: zones, isLoading: zonesLoading, error: zonesError, refetch: refetchZones } = useGetEventZones(eventId);

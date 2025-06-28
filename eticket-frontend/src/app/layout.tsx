@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import ReactQueryProvider from "@/context/ReactQueryProvider";
 import "./globals.css";
 import { AuthProvider } from '../context/AuthProvider';
+import '@/app-init'; // Import patch cho React 19
 
 export const metadata: Metadata = {
   title: "ChanTicket",

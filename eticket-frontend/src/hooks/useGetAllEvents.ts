@@ -7,7 +7,7 @@ export interface Event {
   name: string; // Note: this will be mapped to 'title' in the UI
   description: string;
   image: string;
-  location: string;
+  address: string;
   startedDate: string; // Note: this will be mapped to 'date' in the UI
   endedDate: string;
   startedTime: string;
@@ -70,7 +70,7 @@ export const mapEventToUIFormat = (event: Event) => {
     id: event.id,
     title: event.name,
     date: event.startedDate,
-    location: event.location,
+    address: event.address,
     status: event.status || 'published',
     tickets_sold: event.ticketsSold || 0,
     total_tickets: event.maxBuy || 0,

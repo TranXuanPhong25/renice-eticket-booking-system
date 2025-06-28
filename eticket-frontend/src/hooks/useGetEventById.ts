@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import axiosClient from '@/utils/axiosClient';
 import { handleApiError } from '@/utils/apiErrorHandler';
 import { Event } from './useGetAllEvents';
+import { Seat } from '@/types/seat';
 
 // Extended event details interface
 export interface EventDetails extends Omit<Event, 'location'> {
-  address?: string;
-  location?: string;
+  address: string;
   artists?: Array<{
     id?: string;
     name: string;
@@ -19,14 +19,7 @@ export interface EventDetails extends Omit<Event, 'location'> {
     name: string;
     image?: string;
   }>;
-  seats?: Array<{
-    id: string;
-    name: string;
-    price: number;
-    color: string;
-    points: string;
-    status: 'available' | 'out' | 'reserved';
-  }>;
+  zones?: Array<Seat>;
   socials?: {
     facebook?: string;
     youtube?: string;
@@ -35,29 +28,20 @@ export interface EventDetails extends Omit<Event, 'location'> {
     slug?: string;
   };
   type?: string;
+  zoneMap: string; // URL to the zone map image
 }
 
 // Function to fetch an event by ID or slug
-const fetchEventBySlug = async (slug: string): Promise<EventDetails> => {
+const fetchEventById = async (id:string|null): Promise<EventDetails> => {
+  if (!id) {
+    throw new Error('Invalid event ID or slug provided');
+  }
   try {
     // First try to get by slug
-    const ID_REGEX = /.{36}$/; // Regex to check if slug is a numeric ID
-    const id = slug.match(ID_REGEX);
-    console.log(`Fetching event by slug or ID: ${id}`);
+
     const response = await axiosClient.get(`/events/${id}`);
     return response.data;
   } catch (error) {
-    // If there's an error, check if it's a 404 (not found by slug)
-    // In that case, try to get by ID if the slug is a valid ID
-    if (isNumeric(slug)) {
-      try {
-        const idResponse = await axiosClient.get(`/events/${slug}`);
-        return idResponse.data;
-      } catch (innerError) {
-        throw handleApiError(innerError);
-      }
-    }
-    
     throw handleApiError(error);
   }
 };
@@ -68,13 +52,13 @@ const isNumeric = (value: string): boolean => {
 };
 
 // Hook for getting an event by slug or ID
-export const useGetEventBySlug = (slug: string) => {
+export const useGetEventById = (id: string|null) => {
   return useQuery<EventDetails, Error>({
-    queryKey: ['event', slug],
-    queryFn: () => fetchEventBySlug(slug),
+    queryKey: ['event', id],
+    queryFn: () => fetchEventById(id),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-    enabled: !!slug, // Only run the query if slug is provided
+    enabled: !!id, // Only run the query if slug is provided
   });
 };
 
@@ -84,18 +68,18 @@ export const mapEventToDetailedFormat = (event: Event | EventDetails): EventDeta
   return {
     ...event,
     // Map existing fields
-    address: event.location || '',
+    address: event.address || '',
     
     // Default values for fields that might not be in the API response
     artists: (event as EventDetails).artists || [],
     hosts: (event as EventDetails).hosts || [],
-    seats: (event as EventDetails).seats || [],
+    zones: (event as EventDetails).zones || [],
     socials: {
       facebook: (event as EventDetails).socials?.facebook || '',
       youtube: (event as EventDetails).socials?.youtube || '',
       slug: event.id.toString(),
     },
-    
+    zoneMap: (event as EventDetails).zoneMap || '', // URL to the zone map image
     // Additional fields with default values
     type: (event as EventDetails).type || determineEventType(event as Event),
     maxBuy: event.maxBuy || 4, // Default max tickets per purchase

@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.dtos.EventDTO;
 import com.example.demo.entities.EventEntity;
 import com.example.demo.services.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/events")
 public class EventController {
@@ -22,8 +22,9 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventEntity> getEventById(@PathVariable UUID id) {
-        EventEntity event = eventService.getEventById(id);
+    public ResponseEntity<EventDTO> getEventById(@PathVariable UUID id) {
+        EventDTO event = eventService.getEventById(id);
+
         if(event == null) {
             return ResponseEntity.notFound().build();
         }

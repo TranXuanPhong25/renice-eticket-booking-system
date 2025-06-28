@@ -19,7 +19,7 @@ import {
 } from 'antd';
 import { SearchOutlined, EditOutlined, DeleteOutlined, PlusOutlined, ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import { useGetEventBySlug } from '@/hooks/useGetEventBySlug';
+import { useGetEventById } from '@/hooks/useGetEventById';
 import { useGetEventZones } from '@/hooks/useGetZonesByEvent';
 import { useDeleteZone } from '@/hooks/useDeleteZone';
 
@@ -32,7 +32,7 @@ export default function ZonesManagement({ params }: { params: Promise<{ eventId:
   const router = useRouter();
   
   // Get event details
-  const { data: event, isLoading: eventLoading, error: eventError } = useGetEventBySlug(eventId);
+  const { data: event, isLoading: eventLoading, error: eventError } = useGetEventById(eventId);
   
   // Get zones data
   const { data: zones, isLoading: zonesLoading, error: zonesError, refetch: refetchZones } = useGetEventZones(eventId);

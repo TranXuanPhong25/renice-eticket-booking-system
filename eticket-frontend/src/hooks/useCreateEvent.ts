@@ -8,13 +8,15 @@ export interface EventFormData {
   name: string;
   description: string;
   image: string;
-  location: string;
   startedDate: string;
   endedDate: string;
   startedTime: string;
   endedTime: string;
   maxBuy: number;
   price: number;
+  zoneMap?: string; // URL hình ảnh sơ đồ khu vực (optional)
+    address: string;
+
 }
 
 export interface EventResponse {
@@ -22,13 +24,14 @@ export interface EventResponse {
   name: string;
   description: string;
   image: string;
-  location: string;
+  address: string;
   startedDate: string;
   endedDate: string;
   startedTime: string;
   endedTime: string;
   maxBuy: number;
   price: number;
+  zoneMap?: string; // URL hình ảnh sơ đồ khu vực
   createdAt: string;
   updatedAt: string;
 }

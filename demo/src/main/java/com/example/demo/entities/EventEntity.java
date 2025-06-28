@@ -6,10 +6,10 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.List;
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "events")
 public class EventEntity {
@@ -17,9 +17,8 @@ public class EventEntity {
     @GeneratedValue(generator = "UUID")
     @UuidGenerator
     private UUID id;
-
+    @Column(columnDefinition = "TEXT")
     private String name;
-    private String location;
     @Column(name = "image", columnDefinition = "TEXT")
     private String image;
     private String status;
@@ -29,15 +28,18 @@ public class EventEntity {
     private Long endedDate;
     private String startedTime;
     private String endedTime;
+    @Column(columnDefinition = "TEXT")
     private String address;
+    @Column( columnDefinition = "TEXT")
     private String description;
     private Integer sold;
+    @Column(name = "zone_map", columnDefinition = "TEXT")
+    private String zoneMap;
     @Override
     public String toString() {
         return "EventEntity{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", location='" + location + '\'' +
                 ", image='" + image + '\'' +
                 ", status='" + status + '\'' +
                 ", type='" + type + '\'' +
@@ -46,5 +48,13 @@ public class EventEntity {
                 ", address='" + address + '\'' +
                 ", description='" + description + '\'' +
                 '}';
+    }
+
+    public Long getStartDate() {
+        return startedDate;
+    }
+
+    public Long getEndDate() {
+        return endedDate;
     }
 }

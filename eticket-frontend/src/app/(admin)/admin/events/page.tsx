@@ -63,8 +63,8 @@ export default function EventsManagement() {
     },
     {
       title: 'Địa điểm',
-      dataIndex: 'location',
-      key: 'location',
+      dataIndex: 'address',
+      key: 'address',
     },
     {
       title: 'Trạng thái',
@@ -138,7 +138,7 @@ export default function EventsManagement() {
   // Filter events based on search text
   const filteredEvents = formattedEvents.filter(event => 
     event.title.toLowerCase().includes(searchText.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchText.toLowerCase())
+    event.address.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (

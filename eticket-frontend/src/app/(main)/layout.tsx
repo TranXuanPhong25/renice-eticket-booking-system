@@ -9,7 +9,7 @@ export default function MainLayout({
   return (
     <>
       <Header />
-      <main className='my-8'>{children}</main>
+      <main className='my-8 min-h-screen'>{children}</main>
       <Footer />
     </>
   );
