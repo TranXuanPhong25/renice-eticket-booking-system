@@ -130,7 +130,7 @@ export default function EventBuyPage({
   return (
     <section>
       <Container>
-        <h1 className="text-2xl font-bold mb-4 text-center"><p className="!font-normal">Bạn đang đặt vé cho</p> {event.name}</h1>
+        <h1 className="text-2xl font-bold mb-4 text-center"><p className="!font-normal">Bạn đang đặt vé</p> {event.name}</h1>
         {(!event.zones || event.zones.length === 0) ? (
           <div className="py-12">
             <Alert

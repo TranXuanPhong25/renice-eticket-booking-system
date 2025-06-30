@@ -15,8 +15,8 @@ export interface EventFormData {
   maxBuy: number;
   price: number;
   zoneMap?: string; // URL hình ảnh sơ đồ khu vực (optional)
-    address: string;
-
+  address: string;
+  type: string; // Thêm trường type cho loại sự kiện
 }
 
 export interface EventResponse {
@@ -32,6 +32,7 @@ export interface EventResponse {
   maxBuy: number;
   price: number;
   zoneMap?: string; // URL hình ảnh sơ đồ khu vực
+  type: string; // Thêm trường type cho loại sự kiện
   createdAt: string;
   updatedAt: string;
 }

@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { mockupEventDetail } from "@/mockups/event.mockup";
 import { use } from 'react';
 import { getIdFromSlug } from "@/utils/lib";
+import { eventTypeMapping } from "@/constants/event.constant";
 
 const EventBasicInformation = ({ data }: { data: any[] }) => {
   return (
@@ -179,7 +180,13 @@ export default function EventDetailPage({
             <div className="text-white space-y-6 z-10">
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <Tag color="blue">{(event.type || 'MUSIC').toUpperCase()}</Tag>
+                  {event.type && eventTypeMapping[event.type] ? (
+                    <Tag color={eventTypeMapping[event.type].tagColor}>
+                      {eventTypeMapping[event.type].label}
+                    </Tag>
+                  ) : (
+                    <Tag color="blue">{(event.type || 'MUSIC').toUpperCase()}</Tag>
+                  )}
                   <Tag color="orange">HOT</Tag>
                   <Tag color="red">GIỚI HẠN SỐ LƯỢNG</Tag>
                 </div>

@@ -27,6 +27,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventEntity createEvent(EventEntity eventEntity) {
+        eventEntity.setActive(true);
         return eventRepository.save(eventEntity);
     }
 
@@ -44,9 +45,7 @@ public class EventServiceImpl implements EventService {
         existingEvent.setImage(eventEntity.getImage());
         existingEvent.setMaxBuy(eventEntity.getMaxBuy());
         existingEvent.setAddress(eventEntity.getAddress());
-        existingEvent.setSold(eventEntity.getSold());
         existingEvent.setType(eventEntity.getType());
-        existingEvent.setStatus(eventEntity.getStatus());
         existingEvent.setZoneMap(eventEntity.getZoneMap());
         // Add more fields if needed
         return eventRepository.save(existingEvent);
@@ -69,11 +68,19 @@ public class EventServiceImpl implements EventService {
         eventDTO.setMaxBuy(eventEntity.getMaxBuy());
         eventDTO.setAddress(eventEntity.getAddress());
         eventDTO.setType(eventEntity.getType());
-        eventDTO.setStatus(eventEntity.getStatus());
+        eventDTO.setActive(eventEntity.isActive());
         eventDTO.setZoneMap(eventEntity.getZoneMap());
         List<ZoneEntity> zones = zoneRepository.getZonesOfEventId(id);
         eventDTO.setZones(zones);
         return eventDTO;
-
+    }
+    
+    @Override
+    public void deleteEvent(UUID id) {
+        EventEntity event = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found with id: " + id));
+        event.setActive(false);
+        eventRepository.save(event);
+        
     }
 }

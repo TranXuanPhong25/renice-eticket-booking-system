@@ -21,7 +21,7 @@ public class EventEntity {
     private String name;
     @Column(name = "image", columnDefinition = "TEXT")
     private String image;
-    private String status;
+    private boolean active;
     private String type;
     private Long maxBuy;
     private Long startedDate;
@@ -35,20 +35,7 @@ public class EventEntity {
     private Integer sold;
     @Column(name = "zone_map", columnDefinition = "TEXT")
     private String zoneMap;
-    @Override
-    public String toString() {
-        return "EventEntity{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", image='" + image + '\'' +
-                ", status='" + status + '\'' +
-                ", type='" + type + '\'' +
-                ", maxBuy=" + maxBuy +
-                ", startedDate=" + startedDate +
-                ", address='" + address + '\'' +
-                ", description='" + description + '\'' +
-                '}';
-    }
+
 
     public Long getStartDate() {
         return startedDate;

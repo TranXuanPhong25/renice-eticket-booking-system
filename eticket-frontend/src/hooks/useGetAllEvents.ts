@@ -15,11 +15,11 @@ export interface Event {
   maxBuy: number;
   price: number;
   status: 'published' | 'draft' | 'cancelled';
-  ticketsSold?: number;
-  totalTickets?: number; // This may be calculated from maxBuy
+  sold?: number;
   createdAt: string;
   updatedAt: string;
   slug?: string;  // Optional slug for URLs
+  type?: string;  // Event type: 'music', 'fan_meeting', 'live', 'sport', etc.
 }
 
 // Hàm gọi API lấy danh sách sự kiện
@@ -44,23 +44,26 @@ export const useGetAllEvents = () => {
 
 // Chuyển đổi dữ liệu từ API để phù hợp với UI component
 export const mapEventToUIFormat = (event: Event) => {
-  // Determine event type based on name or description keywords
-  let eventType = "music"; // Default type
+  // Use the event type from API if available, otherwise determine it based on content
+  let eventType = event.type || "music"; // Default to music if no type is available
   
-  const nameAndDesc = (event.name + " " + (event.description || "")).toLowerCase();
-  
-  if (nameAndDesc.includes("sport") || 
-      nameAndDesc.includes("marathon") || 
-      nameAndDesc.includes("thể thao")) {
-    eventType = "sport";
-  } else if (nameAndDesc.includes("fan") || 
-             nameAndDesc.includes("meeting") || 
-             nameAndDesc.includes("gặp mặt")) {
-    eventType = "fan_meeting";
-  } else if (nameAndDesc.includes("live") || 
-             nameAndDesc.includes("concert") || 
-             nameAndDesc.includes("nhạc sống")) {
-    eventType = "live";
+  // If no type from API, try to determine it from content
+  if (!event.type) {
+    const nameAndDesc = (event.name + " " + (event.description || "")).toLowerCase();
+    
+    if (nameAndDesc.includes("sport") || 
+        nameAndDesc.includes("marathon") || 
+        nameAndDesc.includes("thể thao")) {
+      eventType = "sport";
+    } else if (nameAndDesc.includes("fan") || 
+               nameAndDesc.includes("meeting") || 
+               nameAndDesc.includes("gặp mặt")) {
+      eventType = "fan_meeting";
+    } else if (nameAndDesc.includes("live") || 
+               nameAndDesc.includes("concert") || 
+               nameAndDesc.includes("nhạc sống")) {
+      eventType = "live";
+    }
   }
   
   // Generate a slug if not provided
@@ -72,8 +75,7 @@ export const mapEventToUIFormat = (event: Event) => {
     date: event.startedDate,
     address: event.address,
     status: event.status || 'published',
-    tickets_sold: event.ticketsSold || 0,
-    total_tickets: event.maxBuy || 0,
+    sold: event.sold || 0,
     description: event.description,
     image: event.image,
     price: event.price,

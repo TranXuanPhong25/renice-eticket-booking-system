@@ -9,8 +9,6 @@ import {
    TimePicker,
    InputNumber,
    Select,
-   Switch,
-   Upload,
    Card,
    message,
    Typography,
@@ -23,32 +21,72 @@ import {
    Alert,
    Tag
 } from 'antd';
-import { PlusOutlined, InboxOutlined, ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import { useCreateEvent, EventFormData } from '@/hooks/useCreateEvent';
+import { useGetEventById } from '@/hooks/useGetEventById';
+import { useUpdateEvent, EventUpdateFormData } from '@/hooks/useUpdateEvent';
 import { handleApiError } from '@/utils/apiErrorHandler';
 import { eventTypeMapping } from '@/constants/event.constant';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-export default function CreateEvent() {
+export default function EditEvent({ params }: { params: { eventId: string } }) {
+   const { eventId } = params;
    const [form] = Form.useForm();
-   // loading state không cần thiết nữa vì đã có isPending từ react-query
    const router = useRouter();
    const [imagePreviewUrl, setImagePreviewUrl] = useState('');
    const [imageError, setImageError] = useState(false);
    const [zoneMapPreviewUrl, setZoneMapPreviewUrl] = useState('');
    const [zoneMapError, setZoneMapError] = useState(false);
 
-   // Theo dõi thay đổi URL ảnh để hiển thị xem trước
+   // Fetch event data
+   const { data: event, isLoading: isLoadingEvent, error: eventError } = useGetEventById(eventId);
+
+   // Update mutation
+   const { mutate: updateEvent, isPending: isUpdating } = useUpdateEvent(eventId);
+
+   // Watch form fields for image previews
    const imageUrl = Form.useWatch('image', form);
-   const zoneMapUrl = Form.useWatch('zoneMapUrl', form);
+   const zoneMapUrl = Form.useWatch('zoneMap', form);
 
    useEffect(() => {
-      // Đợi người dùng nhập xong rồi mới hiển thị ảnh xem trước
+      if (event) {
+         // Format dates for form
+         const startDate = dayjs(Number(event.startedDate) * 1000);
+         const endDate = dayjs(Number(event.endedDate) * 1000);
+         const startTime = dayjs(event.startedTime, 'HH:mm');
+         const endTime = dayjs(event.endedTime, 'HH:mm');
+
+         // Set form values
+         form.setFieldsValue({
+            name: event.name,
+            description: event.description,
+            image: event.image,
+            address: event.address,
+            type: event.type || 'music',
+            dateRange: [startDate, endDate],
+            time: [startTime, endTime],
+            maxBuy: event.maxBuy,
+            price: event.price,
+            zoneMap: event.zoneMap,
+         });
+
+         // Set preview images
+         if (event.image) {
+            setImagePreviewUrl(event.image);
+         }
+         if (event.zoneMap) {
+            setZoneMapPreviewUrl(event.zoneMap);
+         }
+      }
+   }, [event, form]);
+
+   useEffect(() => {
+      // Preview image when URL changes
       const timer = setTimeout(() => {
          const url = form.getFieldValue('image');
          if (url) {
@@ -61,9 +99,9 @@ export default function CreateEvent() {
    }, [imageUrl, form]);
 
    useEffect(() => {
-      // Đợi người dùng nhập xong rồi mới hiển thị ảnh sơ đồ khu vực
+      // Preview zone map when URL changes
       const timer = setTimeout(() => {
-         const url = form.getFieldValue('zoneMapUrl');
+         const url = form.getFieldValue('zoneMap');
          if (url) {
             setZoneMapPreviewUrl(url);
             setZoneMapError(false);
@@ -73,29 +111,28 @@ export default function CreateEvent() {
       return () => clearTimeout(timer);
    }, [zoneMapUrl, form]);
 
-   // Sử dụng hook useCreateEvent
-   const { mutate: createEvent, isPending } = useCreateEvent();
    const onFinish = async (values: any) => {
       try {
-         // Format lại các giá trị ngày tháng
-         const formattedValues: EventFormData = {
+         // Format form values for the API
+         const formattedValues: EventUpdateFormData = {
             name: values.name,
             description: values.description,
             image: values.image,
             address: values.address,
             maxBuy: values.maxBuy,
             price: values.price,
-            startedDate: new Date(values.dateRange[1].$d).getTime().toString(), 
-            endedDate: new Date(values.dateRange[1].$d).getTime().toString(),
+            startedDate: values.dateRange[0].unix(),
+            endedDate: values.dateRange[1].unix(),
             startedTime: values.time[0].format('HH:mm'),
             endedTime: values.time[1].format('HH:mm'),
-            zoneMap: values.zoneMap, // Thêm zoneMapUrl vào dữ liệu form
-            type: values.type, // Thêm loại sự kiện
+            zoneMap: values.zoneMap,
+            type: values.type,
          };
-         // Gọi API tạo sự kiện thông qua hook
-         createEvent(formattedValues, {
-            onSuccess: (data) => {
-               message.success('Tạo sự kiện thành công!');
+
+         // Call API to update the event
+         updateEvent(formattedValues, {
+            onSuccess: () => {
+               message.success('Cập nhật sự kiện thành công!');
                router.push('/admin/events');
             },
             onError: (error) => {
@@ -108,6 +145,25 @@ export default function CreateEvent() {
          message.error('Có lỗi xảy ra khi xử lý form!');
       }
    };
+
+   if (isLoadingEvent) {
+      return (
+         <div className="flex justify-center items-center min-h-screen">
+            <Spin size="large" tip="Đang tải thông tin sự kiện..." />
+         </div>
+      );
+   }
+
+   if (eventError) {
+      return (
+         <Alert
+            message="Lỗi"
+            description="Không thể tải thông tin sự kiện. Vui lòng thử lại sau."
+            type="error"
+            showIcon
+         />
+      );
+   }
 
    const validateMessages = {
       required: '${label} là trường bắt buộc!',
@@ -126,13 +182,13 @@ export default function CreateEvent() {
             items={[
                { title: 'Admin' },
                { title: 'Quản lý sự kiện', href: '/admin/events' },
-               { title: 'Tạo sự kiện mới' },
+               { title: 'Chỉnh sửa sự kiện' },
             ]}
             className="mb-4"
          />
 
          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
-            <Title level={2} style={{ margin: 0 }}>Tạo sự kiện mới</Title>
+            <Title level={2} style={{ margin: 0 }}>Chỉnh sửa sự kiện</Title>
             <Button
                icon={<ArrowLeftOutlined />}
                onClick={() => router.push('/admin/events')}
@@ -140,13 +196,7 @@ export default function CreateEvent() {
                Quay lại danh sách
             </Button>
          </div>
-         <Alert
-            message="Lưu ý về quy trình tạo sự kiện"
-            description="Bước 1: Tạo thông tin cơ bản của sự kiện. Bước 2: Sau khi tạo sự kiện, bạn có thể tạo các khu vực ngồi (zones) từ danh sách sự kiện."
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
-         />
+
          <Card>
             <Form
                form={form}
@@ -154,10 +204,6 @@ export default function CreateEvent() {
                onFinish={onFinish}
                validateMessages={validateMessages}
                scrollToFirstError
-               initialValues={{
-                  isPublished: false,
-                  capacity: 100,
-               }}
             >
                <Row gutter={24}>
                   <Col span={24}>
@@ -270,7 +316,7 @@ export default function CreateEvent() {
                         <Input
                            placeholder="https://example.com/zone-map.jpg"
                            addonAfter={<EyeOutlined onClick={() => {
-                              const url = form.getFieldValue('zoneMapUrl');
+                              const url = form.getFieldValue('zoneMap');
                               if (url) window.open(url, '_blank');
                            }} />}
                         />
@@ -393,11 +439,15 @@ export default function CreateEvent() {
 
                <Form.Item>
                   <Space>
-                     <Button type="primary" htmlType="submit" loading={isPending}>
-                        Tạo sự kiện
+                     <Button 
+                        type="primary" 
+                        htmlType="submit" 
+                        loading={isUpdating}
+                     >
+                        Lưu thay đổi
                      </Button>
-                     <Button onClick={() => form.resetFields()}>
-                        Xóa form
+                     <Button onClick={() => router.push('/admin/events')}>
+                        Hủy
                      </Button>
                   </Space>
                </Form.Item>

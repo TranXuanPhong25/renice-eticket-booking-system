@@ -1,6 +1,7 @@
 package com.example.demo.repositories;
 
 import com.example.demo.entities.ZoneEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,4 +15,6 @@ public interface ZoneRepository extends JpaRepository<ZoneEntity, UUID> {
 
     @Query(value = "select * from zones z where z.event_id = :eventId ", nativeQuery = true)
     List<ZoneEntity> getZonesOfEventId(@Param("eventId") UUID id);
+
+
 }

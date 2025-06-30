@@ -44,4 +44,15 @@ public class EventController {
         EventEntity updatedEvent = eventService.updateEvent(id, eventEntity);
         return ResponseEntity.ok(updatedEvent);
     }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEvent(@PathVariable UUID id) {
+        try {
+            eventService.deleteEvent(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

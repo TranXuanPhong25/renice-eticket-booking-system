@@ -1,11 +1,13 @@
 "use client";
-
+import "@/app-init"
 import React, { useState } from 'react';
-import { Table, Button, Space, Tag, Input, Card, Typography, Popconfirm, message, Breadcrumb, Spin, Alert } from 'antd';
-import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tag, Input, Card, Typography, Popconfirm, message, Breadcrumb, Spin, Alert, Modal } from 'antd';
+import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined, ReloadOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGetAllEvents, mapEventToUIFormat } from '@/hooks/useGetAllEvents';
+import { eventTypeMapping } from '@/constants/event.constant';
+import { useDeleteEvent } from '@/hooks/useDeleteEvent';
 
 const { Title } = Typography;
 
@@ -14,15 +16,37 @@ const { Title } = Typography;
 export default function EventsManagement() {
   const [searchText, setSearchText] = useState('');
   const router = useRouter();
+  const { confirm } = Modal;
   
   // Sử dụng hook để lấy dữ liệu sự kiện
   const { data: events, isLoading, isError, error, refetch } = useGetAllEvents();
+  // Hook xóa sự kiện
+  const { mutate: deleteEventMutation, isPending: isDeleting } = useDeleteEvent();
+  
+  const showDeleteConfirm = (id: string, name: string) => {
+    confirm({
+      title: 'Bạn có chắc chắn muốn xóa sự kiện này?',
+      icon: <ExclamationCircleOutlined />,
+      content: `Sự kiện: ${name}. Hành động này không thể hoàn tác.`,
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk() {
+        handleDelete(id);
+      },
+    });
+  };
   
   const handleDelete = (id: string) => {
-    // Xử lý xóa sự kiện (sẽ thêm API call thực tế sau)
-    message.success(`Đã xóa sự kiện ID: ${id}`);
-    // Refetch sau khi xóa
-    refetch();
+    deleteEventMutation(id, {
+      onSuccess: () => {
+        message.success('Đã xóa sự kiện thành công');
+        refetch();
+      },
+      onError: (error) => {
+        message.error(`Lỗi khi xóa sự kiện: ${error.message}`);
+      }
+    });
   };
   
   const statusColors = {
@@ -30,7 +54,6 @@ export default function EventsManagement() {
     draft: 'blue',
     cancelled: 'red',
   };
-  
   const columns = [
     {
       title: 'ID',
@@ -67,6 +90,19 @@ export default function EventsManagement() {
       key: 'address',
     },
     {
+      title: 'Loại sự kiện',
+      dataIndex: 'type',
+      key: 'type',
+      render: (type: string) => {
+        const eventType = eventTypeMapping[type] || { label: type || 'Không xác định', tagColor: 'default' };
+        return (
+          <Tag color={eventType.tagColor}>
+            {eventType.label}
+          </Tag>
+        );
+      },
+    },
+    {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
@@ -78,10 +114,10 @@ export default function EventsManagement() {
     },
     {
       title: 'Vé đã bán',
-      key: 'tickets',
+      key: 'sold',
       render: (record: any) => (
         <span>
-          {record.tickets_sold} / {record.total_tickets}
+          {record.sold}
         </span>
       ),
     },
@@ -116,17 +152,16 @@ export default function EventsManagement() {
           >
             Quản lý Khu vực
           </Button>
-          <Popconfirm
-            title="Xóa sự kiện"
-            description="Bạn có chắc chắn muốn xóa sự kiện này không?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Có"
-            cancelText="Không"
+          <Button 
+            type="primary" 
+            danger 
+            icon={<DeleteOutlined />} 
+            size="small"
+            onClick={() => showDeleteConfirm(record.id, record.title)}
+            loading={isDeleting}
           >
-            <Button type="primary" danger icon={<DeleteOutlined />} size="small">
-              Xóa
-            </Button>
-          </Popconfirm>
+            Xóa
+          </Button>
         </Space>
       ),
     },

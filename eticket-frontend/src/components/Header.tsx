@@ -1,8 +1,16 @@
 "use client";
-import { Button, Dropdown, Avatar, Space, Skeleton } from "antd";
+import { Button, Dropdown, Avatar, Space, Skeleton, Badge, Tooltip } from "antd";
 import { Container } from "./Container";
 import Link from "next/link";
-import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
+import { 
+  UserOutlined, 
+  LogoutOutlined, 
+  SettingOutlined, 
+  ShoppingOutlined, 
+  BellOutlined,
+  QuestionCircleOutlined,
+  HomeOutlined
+} from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { IoLogOutOutline } from "react-icons/io5";
@@ -33,16 +41,10 @@ export const Header = () => {
   // User dropdown menu items
   const userMenuItems = [
     {
-      key: 'profile',
-      label: 'Tài khoản',
-      icon: <UserOutlined />,
-      onClick: () => router.push('/profile')
-    },
-    {
-      key: 'settings',
-      label: 'Cài đặt',
-      icon: <SettingOutlined />,
-      onClick: () => router.push('/settings')
+      key: 'orders',
+      label: 'Đơn hàng của tôi',
+      icon: <ShoppingOutlined />,
+      onClick: () => router.push('/order')
     },
     {
       key: 'logout',
@@ -51,9 +53,8 @@ export const Header = () => {
       onClick: handleLogout
     }
   ];
-  
   // Add admin dashboard link if user is admin
-  if (user?.role === 'ADMIN') {
+  if (user?.role === 'ROLE_ADMIN') {
     userMenuItems.unshift({
       key: 'admin',
       label: 'Admin Dashboard',
@@ -71,7 +72,7 @@ export const Header = () => {
           src={user?.avatar} 
           size="small"
         />
-        <span>{user?.username}</span>
+        <span>{user?.username?.replace(/@.+/,'')}</span>
       </Space>
     </Dropdown>
   );
@@ -81,25 +82,32 @@ export const Header = () => {
       <Container>
         <div className="flex items-center justify-between h-16">
           <div className="font-bold text-blue-600">
-            <Link href="/">eTicket</Link>
+            <Link href="/" className="flex items-center">
+              <ShoppingOutlined className="mr-1 text-xl" /> eTicket
+            </Link>
           </div>
           
           
+          
           {/* Authentication UI with conditional rendering to prevent flickering */}
-          <div className="min-w-[100px] flex justify-end">
-            {!isClient || loading ? (
-              <Skeleton.Button active size="small" shape="default" />
-            ) : user ? (
-              userDropdown
-            ) : (
-              <Button 
-                type="primary" 
-                className="bg-blue-500 hover:bg-blue-600" 
-                onClick={handleLogin}
-              >
-                Đăng nhập
-              </Button>
-            )}
+          <div className="flex items-center">
+           
+            
+            <div className="min-w-[100px] ml-2 flex justify-end">
+              {!isClient || loading ? (
+                <Skeleton.Button active size="small" shape="default" />
+              ) : user ? (
+                userDropdown
+              ) : (
+                <Button 
+                  type="primary" 
+                  className="bg-blue-500 hover:bg-blue-600" 
+                  onClick={handleLogin}
+                >
+                  Đăng nhập
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </Container>

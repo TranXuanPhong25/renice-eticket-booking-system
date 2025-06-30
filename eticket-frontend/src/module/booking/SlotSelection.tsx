@@ -89,6 +89,7 @@ export const SlotSelection = (props: any) => {
               selectedSeats={getSelectedSeats()} 
               maxBuy={maxBuy}
               totalTickets={totalTickets}
+              eventName={eventData.name}
             />
           </div>
         </div>
