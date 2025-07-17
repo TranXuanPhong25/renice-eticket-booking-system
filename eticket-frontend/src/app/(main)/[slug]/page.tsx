@@ -1,9 +1,10 @@
+"use client";
+
 import { Container } from "@/components/Container";
 import { SeatMapPreview } from "@/components/event/SeatMapPreview";
-import { mockupEventDetail } from "@/mockups/event.mockup";
 import CopyLinkButton from "@/components/event/CopyLinkButton";
 import { getMaxMinPrice } from "@/utils/event.utils";
-import { Button, Image, Tag, Card, Divider, Avatar, Badge, Breadcrumb } from "antd";
+import { Button, Image, Tag, Card, Divider, Avatar, Badge, Breadcrumb, Skeleton, Alert, Result } from "antd";
 import {
   IoCalendar,
   IoLocationOutline,
@@ -11,17 +12,18 @@ import {
   IoTimeOutline,
   IoPersonOutline,
   IoTicketOutline,
-  IoShareSocialOutline,
-  IoHeartOutline,
-  IoStarOutline,
-  IoHomeOutline,
-  IoChevronForwardOutline
+
 } from "react-icons/io5";
 import { FaFacebook, FaYoutube, FaTwitter, FaInstagram } from "react-icons/fa";
 import Link from "next/link";
-const EventBasicInformation = (props: any) => {
-  const { data } = props;
+import { useGetEventById, mapEventToDetailedFormat, EventDetails } from "@/hooks/useGetEventById";
+import { useEffect, useState } from "react";
+import { mockupEventDetail } from "@/mockups/event.mockup";
+import { use } from 'react';
+import { getIdFromSlug } from "@/utils/lib";
+import { eventTypeMapping } from "@/constants/event.constant";
 
+const EventBasicInformation = ({ data }: { data: any[] }) => {
   return (
     <div className="flex flex-col gap-4">
       {data.map((item: any, index: number) => (
@@ -33,73 +35,6 @@ const EventBasicInformation = (props: any) => {
     </div>
   );
 };
-
-
-
-const SocialLinks = ({ socials }: { socials: any }) => {
-  return (
-    <div className="flex gap-3 mt-4 ml-10">
-      {socials.facebook && (
-        <Link href={socials.facebook} target="_blank" rel="noopener noreferrer"
-          className="text-blue-400 hover:text-blue-300 transition-colors">
-          <FaFacebook size={24} />
-        </Link>
-      )}
-      {socials.youtube && (
-        <Link href={socials.youtube} target="_blank" rel="noopener noreferrer"
-          className="text-red-400 hover:text-red-300 transition-colors">
-          <FaYoutube size={24} />
-        </Link>
-      )}
-      <CopyLinkButton link={`https://eticket.vn/${socials.slug}`} />
-    </div>
-  );
-};
-
-const ArtistSection = ({ artists, hosts }: { artists: any[], hosts: any[] }) => {
-  return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
-      <h3 className="text-xl font-semibold mb-6 text-gray-800">Nghệ sĩ tham gia</h3>
-
-      {/* Artists Grid */}
-      <div className="flex justify-around flex-wrap gap-4 mb-8">
-        {artists.map((artist, index) => (
-          <div key={index} className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors">
-            <div className="relative">
-              <Avatar
-                size={64}
-                src={artist.image}
-                icon={<IoPersonOutline />}
-                className="border-2 border-gray-100"
-              />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-lg text-gray-900">{artist.name}</h4>
-              <p className="text-sm text-gray-500 mt-1">Artist</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {hosts.length > 0 && (
-
-        <div>
-          <h4 className="text-xl font-semibold mb-4 text-gray-700">Đơn vị tổ chức</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {hosts.map((host, index) => (
-              <div key={index} className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                <Avatar size={40} src={host.image} icon={<IoPersonOutline />} />
-                <span className="font-medium text-gray-700">{host.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      )}
-    </div>
-  );
-};
-
 
 const EventCountdown = ({ date }: { date: string }) => {
   return (
@@ -123,68 +58,82 @@ const EventCountdown = ({ date }: { date: string }) => {
   );
 };
 
-const StickyBookingBar = ({ slug, priceRange }: { slug: string, priceRange: any }) => {
-  return (
-    <div className="sticky bottom-0 bg-white border-t shadow-lg p-4 z-50 lg:hidden">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm text-gray-600">Giá từ</div>
-          <div className="text-lg font-bold text-blue-600">
-            {priceRange.minPrice.toLocaleString('vi-VN')} VNĐ
-          </div>
-        </div>
-        <Button
-          type="primary"
-          href={`/${slug}/buy`}
-          size="large"
-          className="bg-gradient-to-r from-blue-500 to-purple-600 border-none"
-          icon={<IoTicketOutline />}
-        >
-          Mua vé ngay
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-export default async function EventDetailPage({
+export default function EventDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  const resolvedParams = use(params);
+  const { slug } = resolvedParams;
+  const { data: eventData, isLoading, error } = useGetEventById(getIdFromSlug(slug));
+  const [event, setEvent] = useState<EventDetails | null>(null);
+  const [priceRange, setPriceRange] = useState({ minPrice: 0, maxPrice: 0 });
 
-  const priceRange = getMaxMinPrice(mockupEventDetail.seats);
+  useEffect(() => {
+    // If we have data from the API, use it
+    if (eventData) {
+      const mappedEvent = mapEventToDetailedFormat(eventData);
+      setEvent(mappedEvent);
+      
+      // Calculate price range
+      if (mappedEvent.zones && mappedEvent.zones.length > 0) {
+        setPriceRange(getMaxMinPrice(mappedEvent.zones));
+      } else if (mappedEvent.price) {
+        // If no seats but has a price
+        setPriceRange({ minPrice: mappedEvent.price, maxPrice: mappedEvent.price });
+      }
+    } else if (!isLoading && !error) {
+      // Fallback to mockup data if no API data and not loading/error
+      setEvent(mockupEventDetail as unknown as EventDetails);
+      setPriceRange(getMaxMinPrice(mockupEventDetail.seats));
+    }
+  }, [eventData, isLoading, error]);
 
+  if (isLoading) {
+    return (
+      <Container>
+        <div className="py-12">
+          <Skeleton active avatar paragraph={{ rows: 4 }} />
+        </div>
+      </Container>
+    );
+  }
+
+  if (error && !event) {
+    return (
+      <Container>
+        <div className="py-12">
+          <Result
+            status="404"
+            title="Không tìm thấy sự kiện"
+            subTitle="Xin lỗi, sự kiện bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
+            extra={
+              <Button type="primary" href="/">
+                Trở về trang chủ
+              </Button>
+            }
+          />
+        </div>
+      </Container>
+    );
+  }
+
+  if (!event) {
+    return (
+      <Container>
+        <div className="py-12">
+          <Alert
+            message="Dữ liệu không khả dụng"
+            description="Không thể tải thông tin sự kiện. Vui lòng thử lại sau."
+            type="error"
+            showIcon
+          />
+        </div>
+      </Container>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <Container>
-          <div className="py-3">
-            <Breadcrumb
-              items={[
-                {
-                  href: '/',
-                  title: (
-                    <div className="flex items-center gap-1">
-                      <IoHomeOutline />
-                      <span>Trang chủ</span>
-                    </div>
-                  ),
-                },
-                {
-                  href: '/events',
-                  title: 'Sự kiện',
-                },
-                {
-                  title: mockupEventDetail.name,
-                },
-              ]}
-            />
-          </div>
-        </Container>
-      </div>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -193,8 +142,8 @@ export default async function EventDetailPage({
           <Image
             preview={false}
             className="!w-screen object-cover !z-0"
-            src={mockupEventDetail.image}
-            alt={mockupEventDetail.name}
+            src={event.image}
+            alt={event.name}
             style={{ filter: 'blur(10px) brightness(0.5)', transform: 'scale(1.2)' }}
           />
         </div>
@@ -207,12 +156,12 @@ export default async function EventDetailPage({
                 <Image
                   preview={false}
                   className="rounded-2xl overflow-hidden shadow-2xl w-full"
-                  src={mockupEventDetail.image}
-                  alt={mockupEventDetail.name}
+                  src={event.image}
+                  alt={event.name}
                 />
                 <div className="absolute top-4 left-4">
                   <Tag color="green" className="text-sm font-semibold">
-                    {mockupEventDetail.status}
+                    {event.status || 'OPEN'}
                   </Tag>
                 </div>
               </div>
@@ -231,12 +180,18 @@ export default async function EventDetailPage({
             <div className="text-white space-y-6 z-10">
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <Tag color="blue">{mockupEventDetail.type.toUpperCase()}</Tag>
+                  {event.type && eventTypeMapping[event.type] ? (
+                    <Tag color={eventTypeMapping[event.type].tagColor}>
+                      {eventTypeMapping[event.type].label}
+                    </Tag>
+                  ) : (
+                    <Tag color="blue">{(event.type || 'MUSIC').toUpperCase()}</Tag>
+                  )}
                   <Tag color="orange">HOT</Tag>
                   <Tag color="red">GIỚI HẠN SỐ LƯỢNG</Tag>
                 </div>
-                <h1 className="text-2xl lg:text-3xl  font-bold leading-tight mb-4">
-                  {mockupEventDetail.name}
+                <h1 className="text-2xl lg:text-3xl font-bold leading-tight mb-4">
+                  {event.name}
                 </h1>
               </div>
 
@@ -244,11 +199,11 @@ export default async function EventDetailPage({
                 data={[
                   {
                     icon: <IoCalendar size={24} />,
-                    value: `${mockupEventDetail.startedDate} - 20:00`,
+                    value: `${new Date(event.startedDate).toLocaleDateString() || 'TBA'} - ${event.startedTime || '20:00'}`,
                   },
                   {
                     icon: <IoLocationOutline size={24} />,
-                    value: mockupEventDetail.address,
+                    value: event.address || event.address || 'TBA',
                   },
                   {
                     icon: <IoPricetag size={24} />,
@@ -256,48 +211,31 @@ export default async function EventDetailPage({
                   },
                   {
                     icon: <IoPersonOutline size={24} />,
-                    value: `Tối đa ${mockupEventDetail.maxBuy} vé/người mua`,
+                    value: `Tối đa ${event.maxBuy || 4} vé/người mua`,
                   },
                 ]}
               />
 
-              <SocialLinks socials={mockupEventDetail.socials} />
             </div>
           </div>
         </Container>
       </section>
 
       {/* Content Sections */}
-
-      <Container >
-        <div className="py-12 !space-y-8 ">
+      <Container>
+        <div className="py-12 !space-y-8">
           {/* Event Description */}
           <Card className="shadow-sm">
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">Giới thiệu sự kiện</h2>
             <div className="prose max-w-none text-gray-600 leading-relaxed">
-              <p>{mockupEventDetail.description}</p>
-              <p>
-                Đây là một sự kiện âm nhạc đặc biệt không thể bỏ lỡ trong năm 2025.
-                Với sự tham gia của những nghệ sĩ hàng đầu, hệ thống âm thanh và ánh sáng
-                chuyên nghiệp, chúng tôi cam kết mang đến cho khán giả một trải nghiệm
-                âm nhạc tuyệt vời nhất.
-              </p>
-              <p>
-                Sự kiện sẽ diễn ra tại {mockupEventDetail.address}, một trong những
-                địa điểm tổ chức sự kiện uy tín và chuyên nghiệp nhất tại Hà Nội.
-              </p>
+              <p>{event.description}</p>
             </div>
           </Card>
-
-          {/* Seat Map Preview - NEW SECTION */}
-          <SeatMapPreview seats={mockupEventDetail.seats} />
-
-          {/* Artists & Hosts */}
-          <ArtistSection
-            artists={mockupEventDetail.artists}
-            hosts={mockupEventDetail.hosts}
-          />
-
+          
+          {/* Seat Map Preview - if available */}
+        
+            <SeatMapPreview event={event} />
+          
 
           {/* Important Information */}
           <Card className="bg-yellow-50 border-yellow-200">
@@ -316,9 +254,6 @@ export default async function EventDetailPage({
         </div>
       </Container>
 
-
-      {/* Sticky Booking Bar */}
-      <StickyBookingBar slug={slug} priceRange={priceRange} />
     </div>
   );
 }

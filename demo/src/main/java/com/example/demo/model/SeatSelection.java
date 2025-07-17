@@ -1,26 +1,13 @@
 package com.example.demo.model;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
-
+@Data
 public class SeatSelection {
     private UUID zoneId;
     private int quantity;
+    private Long amount;
 
-    public UUID getZoneId() {
-        return zoneId;
-    }
-
-    public void setZoneId(UUID zoneId) {
-        this.zoneId = zoneId;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
 }

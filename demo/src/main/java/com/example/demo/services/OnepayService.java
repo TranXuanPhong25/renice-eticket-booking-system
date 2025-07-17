@@ -1,16 +1,13 @@
 package com.example.demo.services;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.example.demo.repositories.OrderRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +15,6 @@ import org.springframework.stereotype.Service;
 public class OnepayService {
     @Value("${onepay.secure-secret}")
     private String secureSecret;
-
-
     static public final char[] HEX_TABLE = new char[]{
             '0', '1', '2', '3', '4', '5', '6', '7',
             '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -37,6 +32,36 @@ public class OnepayService {
         decodeHexArray['e'] = decodeHexArray['E'];
         decodeHexArray['f'] = decodeHexArray['F'];
     }
+
+    private static final Map<String, String> map_result = new HashMap<String, String>() {
+        {
+            put("0", "Giao dịch thành công");
+            put("1", "Ngân hàng từ chối giao dịch");
+            put("3", "Mã đơn vị không tồn tại");
+            put("4", "Không đúng access code");
+            put("5", "Số tiền không hợp lệ");
+            put("6", "Mã tiền tệ không tồn tại");
+            put("7", "Lỗi không xác định");
+            put("8", "Số thẻ không đúng");
+            put("9", "Tên chủ thẻ không đúng");
+            put("10", "Thẻ hết hạn/Thẻ bị khóa");
+            put("11", "Thẻ chưa đăng ký sử dụng dịch vụ");
+            put("12", "Ngày phát hành/Hết hạn không đúng");
+            put("13", "Vượt quá hạn mức thanh toán");
+            put("21", "Số tiền không đủ để thanh toán");
+            put("22", "Giao dịch không thành công. Thông tin tài khoản không đúng. Vui lòng kiểm tra và thực hiện thanh toán lại");
+            put("23", "Giao dịch không thành công. Tài khoản bị khóa.Vui lòng liên hê ngân hàng theo số điện thoại sau mặt thẻ để được hỗ trợ");
+            put("24", "Giao dịch không thành công. Thông tin thẻ không đúng. Vui lòng kiểm tra và thực hiện thanh toán lại");
+            put("25", "Giao dịch không thành công. OTP không đúng.Vui lòng kiểm tra và thực hiện thanh toán lạ");
+            put("253", "Giao dịch không thành công. Quá thời gian thanh toán. Vui lòng thực hiện thanh toán lại");
+            put("99", "Giao dịch không thành công. Người sử dụng hủy giao dịch");
+            put("B", "Giao dịch không thành công do không xác thực được 3D-Secure. Vui lòng liên hệ ngân hàng theo số điện thoại sau mặt thẻ được hỗ trợ chi tiết.");
+            put("E", "Giao dịch không thành công do nhập sai CSC (Card Security Card) hoặc ngân hàng từ chối cấp phép cho giao dịch. Vui lòng liên hệ ngân hàng theo số điện thoại sau mặt thẻ được hỗ trợ chi tiết.");
+            put("F", "Giao dịch không thành công do không xác thực được 3D-Secure. Vui lòng liên hệ ngân hàng theo số điện thoại sau mặt thẻ được hỗ trợ chi tiết.");
+            put("Z", "Giao dịch của bạn bị từ chối. Vui lòng liên hệ Đơn vị chấp nhận thẻ để được hỗ trợ.");
+        }
+    };
+
 
     public String hashAllFields(Map fields) {
         List fieldNames = new ArrayList(fields.keySet());
@@ -98,6 +123,8 @@ public class OnepayService {
         }
         return sb.toString();
     }
-
+    public String getResponseDescription(String vResponseCode) {
+        return map_result.getOrDefault(vResponseCode, "Mã lỗi không hợp lệ hoặc không được hỗ trợ");
+    }
 }
 

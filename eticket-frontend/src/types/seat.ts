@@ -1,10 +1,9 @@
 export type Seat = {
-   id: number;
-   zoneId: number;
-   row: string;
-   column: string;
+   id: string;
+   eventId: string;
    color: string;
    name: string;
    status: "available" | "selected" | "out";
    price: number;
+   
 }

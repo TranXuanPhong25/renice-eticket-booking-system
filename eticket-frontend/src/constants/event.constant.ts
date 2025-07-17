@@ -16,3 +16,5 @@ export const eventTypeMapping: any = {
     tagColor: "pink",
   },
 };
+
+

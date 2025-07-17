@@ -1,11 +1,15 @@
 package com.example.demo.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.List;
 import java.util.UUID;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "orders")
 public class OrderEntity {
@@ -13,7 +17,7 @@ public class OrderEntity {
     @GeneratedValue(generator = "UUID")
     @UuidGenerator
     private UUID id;
-
+    private UUID userId;
     private String customerName;
     private String customerEmail;
     private Long orderTime;
@@ -23,70 +27,7 @@ public class OrderEntity {
     private String orderStatus;
     private String status;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL)
     private List<TicketEntity> tickets;
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public String getCustomerEmail() {
-        return customerEmail;
-    }
-
-    public void setCustomerEmail(String customerEmail) {
-        this.customerEmail = customerEmail;
-    }
-
-    public Long getOrderTime() {
-        return orderTime;
-    }
-
-    public void setOrderTime(Long orderTime) {
-        this.orderTime = orderTime;
-    }
-
-    public List<TicketEntity> getTickets() {
-        return tickets;
-    }
-
-    public void setTickets(List<TicketEntity> tickets) {
-        this.tickets = tickets;
-    }
-
-    public Long getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(Long totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public String getOrderStatus() {
-        return orderStatus;
-    }
-
-    public void setOrderStatus(String orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }
